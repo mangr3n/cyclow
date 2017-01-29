@@ -30,10 +30,10 @@ Note that state, dom and events are interconnected in a cycle.
 
 ## <a name="virtual-dom-element"></a>Virtual DOM element
 **cyclow** represents DOM elements like virtual DOM elements, that is a simple Javascript object with the following (optional) properties:
-- **tag**. HTML tag (default is *div*)
-- **attrs**. Attributes (like *id*, *class* or *style*).
-- **on**. Events handlers (like *click*). It can be just a value or a function that receive the DOM event and a function to send a message.
-- **content**. Content can be just text, an array of virtual DOM elements or a real DOM element.
+- **tag**: HTML tag (default is *div*)
+- **attrs**: Attributes (like *id*, *class* or *style*).
+- **on**: Events handlers (like *click*). It can be just a value or a function that receive the DOM event and a function to send a message.
+- **content**: Content can be just text, an array of virtual DOM elements or a real DOM element.
 
 A virtual DOM element:
 ```js
