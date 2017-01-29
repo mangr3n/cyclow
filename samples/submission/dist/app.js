@@ -56,10 +56,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	
 	var _cyclow = __webpack_require__(1);
 	
 	var _submission = __webpack_require__(3);
@@ -68,11 +64,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var myapp = function myapp(id, initialState) {
+	var submissionAppFactory = function submissionAppFactory(id, initialState) {
 	  return (0, _cyclow.app)((0, _submission2.default)(), id, initialState);
 	};
 	
-	exports.default = myapp;
+	module.exports = submissionAppFactory;
 
 /***/ },
 /* 1 */
@@ -149,21 +145,21 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _domDriver = __webpack_require__(2);
+				var _dom = __webpack_require__(2);
 	
-				Object.defineProperty(exports, 'domDriver', {
+				Object.defineProperty(exports, 'dom', {
 					enumerable: true,
 					get: function get() {
-						return _interopRequireDefault(_domDriver).default;
+						return _interopRequireDefault(_dom).default;
 					}
 				});
 	
-				var _stateDriver = __webpack_require__(5);
+				var _state = __webpack_require__(5);
 	
-				Object.defineProperty(exports, 'stateDriver', {
+				Object.defineProperty(exports, 'state', {
 					enumerable: true,
 					get: function get() {
-						return _interopRequireDefault(_stateDriver).default;
+						return _interopRequireDefault(_state).default;
 					}
 				});
 	
@@ -242,7 +238,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
 	
-				var domDriver = function domDriver() {
+				var dom = function dom() {
 					return (0, _graflow.component)({
 						components: {
 							build: (0, _graflow.component)(function (v, next) {
@@ -259,7 +255,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					});
 				};
 	
-				exports.default = domDriver;
+				exports.default = dom;
 	
 				/***/
 			},
@@ -1310,7 +1306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
 	
-				var stateDriver = function stateDriver() {
+				var state = function state() {
 					var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
 					var state = initialState;
@@ -1328,7 +1324,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					});
 				};
 	
-				exports.default = stateDriver;
+				exports.default = state;
 	
 				/***/
 			}
@@ -1433,8 +1429,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return ['confirm'];
 	  });
 	
-	  var state = (0, _cyclow.stateDriver)();
-	  var dom = (0, _cyclow.domDriver)();
+	  var state = (0, _cyclow.state)();
+	  var dom = (0, _cyclow.dom)();
 	
 	  return (0, _graflow.component)({
 	    components: { state: state, events: events, dom: dom, view: view, init: init, confirm: confirm,
@@ -1491,8 +1487,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return ['disabled', v];
 	  });
 	
-	  var state = (0, _cyclow.stateDriver)();
-	  var dom = (0, _cyclow.domDriver)();
+	  var state = (0, _cyclow.state)();
+	  var dom = (0, _cyclow.dom)();
 	
 	  var events = (0, _graflow.chain)((0, _graflow.map)(function (_ref) {
 	    var _ref2 = _slicedToArray(_ref, 2),

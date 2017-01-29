@@ -1,7 +1,7 @@
 import { component, demux } from 'graflow'
 import build from './buildDom'
 
-const domDriver = () => component({
+const dom = () => component({
   components: {
     build: component((v, next) => {
       const nextEvent = e => next({event: e})
@@ -19,4 +19,4 @@ const domDriver = () => component({
   , outputs: ['element', 'event']
 })
 
-export default domDriver
+export default dom

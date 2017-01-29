@@ -1,6 +1,8 @@
-import { app } from '../../dist/cyclow'
+import { app as appFactory } from '../../dist/cyclow'
 import submission from './submission'
 
-const myapp = (id, initialState) => app(submission(), id, initialState)
+const submissionAppFactory = (id, initialState) => {
+  return appFactory(submission(), id, initialState)
+}
 
-export default myapp
+module.exports = submissionAppFactory

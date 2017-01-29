@@ -1,4 +1,4 @@
-import { domDriver, stateDriver } from '../../dist/cyclow'
+import { dom as domFactory, state as stateFactory } from '../../dist/cyclow'
 import { component, map, chain, demux } from 'graflow'
 
 const confirm = () => {
@@ -24,8 +24,8 @@ const confirm = () => {
 
   const mapDisabled = map(v => ['disabled', v])
 
-  const state = stateDriver()
-  const dom = domDriver()
+  const state = stateFactory()
+  const dom = domFactory()
 
   const events = chain(
     map(([type, payload]) => {

@@ -1,5 +1,5 @@
-import confirmFactory from '../confirm/confirm'
-import { domDriver, stateDriver } from '../../dist/cyclow'
+import confirmFactory from './confirm'
+import { dom as domFactory, state as stateFactory } from '../../dist/cyclow'
 import { component, map, mux, accumulate, chain, demux } from 'graflow'
 
 const submission = () => {
@@ -50,8 +50,8 @@ const submission = () => {
   const mapSubmit  = map(e => ['submit'])
   const mapConfirm = map(e => ['confirm'])
 
-  const state = stateDriver()
-  const dom = domDriver()
+  const state = stateFactory()
+  const dom = domFactory()
 
   return component({
     components: { state, events, dom, view, init, confirm

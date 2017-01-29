@@ -1,0 +1,11 @@
+#content {
+  height: 200px;
+  width: 200px;
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  cursor: default;
+  user-select: none;
+}
+.on { background-color: yellow; }
+.off { background-color: gray; }

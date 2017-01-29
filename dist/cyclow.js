@@ -69,21 +69,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _domDriver = __webpack_require__(2);
+	var _dom = __webpack_require__(2);
 	
-	Object.defineProperty(exports, 'domDriver', {
+	Object.defineProperty(exports, 'dom', {
 	  enumerable: true,
 	  get: function get() {
-	    return _interopRequireDefault(_domDriver).default;
+	    return _interopRequireDefault(_dom).default;
 	  }
 	});
 	
-	var _stateDriver = __webpack_require__(5);
+	var _state = __webpack_require__(5);
 	
-	Object.defineProperty(exports, 'stateDriver', {
+	Object.defineProperty(exports, 'state', {
 	  enumerable: true,
 	  get: function get() {
-	    return _interopRequireDefault(_stateDriver).default;
+	    return _interopRequireDefault(_state).default;
 	  }
 	});
 
@@ -156,7 +156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var domDriver = function domDriver() {
+	var dom = function dom() {
 	  return (0, _graflow.component)({
 	    components: {
 	      build: (0, _graflow.component)(function (v, next) {
@@ -173,7 +173,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
-	exports.default = domDriver;
+	exports.default = dom;
 
 /***/ },
 /* 3 */
@@ -1075,7 +1075,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var stateDriver = function stateDriver() {
+	var state = function state() {
 	  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
 	  var state = initialState;
@@ -1093,7 +1093,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
-	exports.default = stateDriver;
+	exports.default = state;
 
 /***/ }
 /******/ ])

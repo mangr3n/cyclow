@@ -1,6 +1,8 @@
-import { app } from '../../dist/cyclow'
-import switcher from './switch'
+import { app as appFactory } from '../../dist/cyclow'
+import switchFactory from './switch'
 
-const myapp = (id, initialState) => app(switcher(), id, initialState)
+const switcherAppFactory = (id, initialState) => {
+  return appFactory(switchFactory(), id, initialState)
+}
 
-export default myapp
+module.exports = switcherAppFactory

@@ -1,6 +1,6 @@
 import component from 'graflow'
 
-const stateDriver = (initialState={}) => {
+const state = (initialState={}) => {
   let state = initialState
 
   return component({
@@ -19,4 +19,4 @@ const stateDriver = (initialState={}) => {
   })
 }
 
-export default stateDriver
+export default state

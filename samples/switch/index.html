@@ -1,23 +1,13 @@
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script src="./dist/app.js"></script>
     <script>
-      const myapp = app.default('main')
-      document.addEventListener("DOMContentLoaded", () => { myapp.start() })
+      const switchApp = app('main', false)
+      document.addEventListener("DOMContentLoaded", () => {
+        switchApp.start()
+      })
     </script>
-    <style>
-      #content {
-        height: 200px;
-        width: 200px;
-        display: table-cell;
-        vertical-align: middle;
-        text-align: center;
-        cursor: default;
-        user-select: none;
-      }
-      .on { background-color: yellow; }
-      .off { background-color: gray; }
-    </style>
   </head>
   <body>
     <div id="main"></div>
