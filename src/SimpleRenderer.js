@@ -1,3 +1,6 @@
+import buildDom from './buildDom'
+import Component from 'graflow'
+
 const cacheProps = e => ({
   id: e.id
   , selectionStart:e.selectionStart
@@ -7,15 +10,18 @@ const cacheProps = e => ({
   , scrollLeft:e.scrollLeft
 })
 
-const app = (component, id, initialState={}) => {
-  component.out.dom.on(e => {
+const SimpleRenderer = (targetId) => {
+  const target = targetId ? document.getElementById(targetId) : document.body
+
+  return Component(vdom => {
+    const dom = buildDom(vdom)
+
     const focusedId = (document.activeElement || {id:''}).id
     const identifiedElements =
       Array.prototype.map.call(document.querySelectorAll('[id]'), cacheProps)
 
-    const el = document.getElementById(id)
-    el.innerHTML = ''
-    el.appendChild(e)
+    target.innerHTML = ''
+    target.appendChild(dom)
 
     identifiedElements.forEach(element => {
       const newElement = document.getElementById(element.id)
@@ -25,10 +31,6 @@ const app = (component, id, initialState={}) => {
       }
     })
   })
-
-  return {
-    start() { component.in.init.send(initialState) }
-  }
 }
 
-export default app
+export default SimpleRenderer

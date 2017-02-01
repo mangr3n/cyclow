@@ -1,6 +1,6 @@
 {
   "name": "cyclow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A reactive frontend framework for JavaScript",
   "main": "dist/cyclow.js",
   "scripts": {
@@ -54,6 +54,6 @@
     "mainVarName": "cyclow"
   },
   "dependencies": {
-    "graflow": "0.1.0"
+    "graflow": "0.2.0"
   }
 }

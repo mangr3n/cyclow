@@ -1,14 +1,14 @@
-import { component, demux } from 'graflow'
+import { Component, Demuxer } from 'graflow'
 import build from './buildDom'
 
-const dom = () => component({
+const dom = () => Component({
   components: {
-    build: component((v, next) => {
+    build: Component((v, next) => {
       const nextEvent = e => next({event: e})
       const el = build(v, nextEvent)
       next({element: el})
     })
-    , demux: demux(['event', 'element'])
+    , demux: Demuxer('event', 'element')
   }
   , connections: [
     ['in.default', 'build']
