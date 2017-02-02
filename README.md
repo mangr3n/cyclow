@@ -49,7 +49,7 @@ As you can see this component is composed by:
   - `state`: This component takes a *state transformation* and apply it to the current state. So it mutates the state and returns the new state.
   - `view`: This component takes a state and returns a [Virtual DOM Element](#virtual-dom-element).
 
-A block component do nothing by itself. It needs a `init` input (usually fired by `DOMContentLoaded` document event) and a [renderer](#renderer) that transforms `vdom` output in a real DOM Element and updates the HTML document. Luckily, [run](#run) function do extactly that.
+A block component do nothing by itself. It needs a `init` input (usually fired by `DOMContentLoaded` document event) and a [renderer](#renderer) that transforms `vdom` output in a real DOM Element and updates the HTML document. Luckily, [run](#run) function does extactly that.
 
 ## <a name="virtual-dom-element"></a>Virtual DOM Element
 cyclow represents DOM elements as Virtual DOM Elements, that is a simple Javascript object with the following (optional) properties:
@@ -101,6 +101,7 @@ Arguments:
 Returns: A [graflow] component
 
 ## <a name="TODO"></a> TODO
+- [ ] A cool logo
 - [ ] JavaScript Standard Style
 - [ ] More documentation
 - [ ] More samples
