@@ -14,7 +14,7 @@ const run = (MainComponent, opts={}) => {
       },
       connections: [
         ['in', 'main.init'],
-        ['main.dom', 'renderer']
+        ['main.vdom', 'renderer']
       ]
     })
 

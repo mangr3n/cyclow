@@ -58,13 +58,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _cyclow = __webpack_require__(1);
 	
-	var _Counter = __webpack_require__(3);
+	var _DoubleCounter = __webpack_require__(3);
 	
-	var _Counter2 = _interopRequireDefault(_Counter);
+	var _DoubleCounter2 = _interopRequireDefault(_DoubleCounter);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	(0, _cyclow.run)(_Counter2.default);
+	(0, _cyclow.run)(_DoubleCounter2.default);
 
 /***/ },
 /* 1 */
@@ -2243,6 +2243,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _cyclow = __webpack_require__(1);
 	
+	var _Counter = __webpack_require__(4);
+	
+	var _Counter2 = _interopRequireDefault(_Counter);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var DoubleCounter = function DoubleCounter() {
+	  return (0, _cyclow.Block)({
+	    components: { counter: (0, _Counter2.default)() },
+	    events: {
+	      init: function init() {
+	        return 'counter.init';
+	      },
+	      'counter.count': function counterCount(count) {
+	        return function (double) {
+	          return count * 2;
+	        };
+	      }
+	    },
+	    view: function view(double, vdom) {
+	      return { content: [vdom.counter, { content: 'Double: ' + double }] };
+	    }
+	  });
+	};
+	
+	exports.default = DoubleCounter;
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _cyclow = __webpack_require__(1);
+	
 	var Counter = function Counter() {
 	  return (0, _cyclow.Block)({
 	    events: {
@@ -2258,12 +2297,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    },
 	    view: function view(state) {
-	      return {
-	        tag: 'button',
+	      return { tag: 'button',
 	        on: { click: ['click'] },
 	        content: 'Count: ' + state
 	      };
-	    }
+	    },
+	    out: { count: function count(state) {
+	        return state;
+	      } }
 	  });
 	};
 	

@@ -18,7 +18,7 @@ const SimpleRenderer = (targetId) => {
 
     const focusedId = (document.activeElement || {id:''}).id
     const identifiedElements =
-      Array.prototype.map.call(document.querySelectorAll('[id]'), cacheProps)
+      [...document.querySelectorAll('[id]')].map(cacheProps)
 
     target.innerHTML = ''
     target.appendChild(dom)

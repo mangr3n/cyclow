@@ -1,3 +1,9 @@
+### [0.3.0](https://github.com/pmros/cyclow/releases/tag/v0.3.0)
+
+- Support for nested components
+- Updated to graflow 0.2.3
+- More samples
+
 ### [0.2.0](https://github.com/pmros/cyclow/releases/tag/v0.2.0)
 
 - Big refactoring

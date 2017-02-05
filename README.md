@@ -31,6 +31,7 @@ You can build and open samples in a browser:
 ```
   git clone https://github.com/pmros/cyclow
   cd cyclow
+  npm install
   npm run samples
 ```
 
@@ -95,8 +96,10 @@ Arguments:
 ### <a name="Block"></a>```Block(options)```
 Arguments:
 - `options`:
+  - `components`
   - `events`
   - `view`
+  - `out`
 
 Returns: A [graflow] component
 

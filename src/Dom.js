@@ -1,7 +1,7 @@
 import { Component, Demuxer } from 'graflow'
 import build from './buildDom'
 
-const dom = () => Component({
+const Dom = () => Component({
   components: {
     build: Component((v, next) => {
       const nextEvent = e => next({event: e})
@@ -19,4 +19,4 @@ const dom = () => Component({
   , outputs: ['element', 'event']
 })
 
-export default dom
+export default Dom
