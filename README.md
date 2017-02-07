@@ -35,6 +35,8 @@ You can build and open samples in a browser:
   npm run samples
 ```
 
+You can find even more samples at [JS Comp](http://blog.krawaller.se/jscomp/) and compare them with another implementations using frameworks like React, Angular or Cycle.
+
 ## How it works?
 Block is a graflow component factory that creates a component with a structure like this:
 
