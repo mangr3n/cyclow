@@ -1,7 +1,7 @@
 import { Block } from '../../dist/cyclow'
 
 const Counter = () => Block({
-  events: {
+  on: {
     init: () => state => 0,
     click: () => state => state + 1
   },

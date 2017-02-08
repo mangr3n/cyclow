@@ -3,7 +3,7 @@ import { Ticker } from 'graflow'
 
 const Counter = () => Block({
   components: {ticker: Ticker(1000)},
-  events: {
+  on: {
     init: () => 'ticker',
     ticker: () => date => new Date()
   },
