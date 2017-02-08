@@ -22,13 +22,13 @@ const toCanonicalItem = msg => {
 
 const toCanonicalMessage = msg => [].concat(msg).map(toCanonicalItem)
 
+const Events = events => Chain(
+  Mapper(([[e, payload], state]) => {
+    return toCanonicalMessage(events[e](payload, state))
+  }),
+  Serializer(),
+  Demuxer('state', 'components', 'outputs')
+)
 
-const Events = events => {
-  return Chain(
-    Mapper(([e, payload]) => toCanonicalMessage(events[e](payload))),
-    Serializer(),
-    Demuxer('state', 'components', 'outputs')
-  )
-}
 
 export default Events
