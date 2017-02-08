@@ -7,7 +7,7 @@ const Counter = () => Block({
   },
   view: state => ({
     tag: 'button',
-    on: {click: ['click']},
+    on: {click: 'click'},
     content: `Count: ${state}`
   })
 })

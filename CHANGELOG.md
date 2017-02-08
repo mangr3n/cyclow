@@ -1,3 +1,7 @@
+### [0.3.2](https://github.com/pmros/cyclow/releases/tag/v0.3.2)
+
+- Pass current state to event handler
+
 ### [0.3.1](https://github.com/pmros/cyclow/releases/tag/v0.3.1)
 
 - Rename `events` to `on`

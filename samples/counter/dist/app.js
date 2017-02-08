@@ -1884,10 +1884,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				var Events = function Events(events) {
 					return (0, _graflow.Chain)((0, _graflow.Mapper)(function (_ref) {
 						var _ref2 = _slicedToArray(_ref, 2),
-						    e = _ref2[0],
-						    payload = _ref2[1];
+						    _ref2$ = _slicedToArray(_ref2[0], 2),
+						    e = _ref2$[0],
+						    payload = _ref2$[1],
+						    state = _ref2[1];
 	
-						return toCanonicalMessage(events[e](payload));
+						return toCanonicalMessage(events[e](payload, state));
 					}), (0, _graflow.Serializer)(), (0, _graflow.Demuxer)('state', 'components', 'outputs'));
 				};
 	
@@ -2033,6 +2035,22 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				}
 	
+				var Memory = function Memory() {
+					var memory = void 0;
+					return (0, _graflow.Component)({
+						inputs: ['set', 'get'],
+						components: {
+							set: (0, _graflow.Component)(function (v) {
+								return memory = v;
+							}),
+							get: (0, _graflow.Mapper)(function (v) {
+								return [v, memory];
+							})
+						},
+						connections: [['in.set', 'set'], ['in.get', 'get'], ['get', 'out']]
+					});
+				};
+	
 				var toObject = function toObject(kvs) {
 					return kvs.reduce(function (obj, _ref) {
 						var _ref2 = _slicedToArray(_ref, 2),
@@ -2059,10 +2077,22 @@ return /******/ (function(modules) { // webpackBootstrap
 					    postState = _ref3.state,
 					    handlers = _objectWithoutProperties(_ref3, ['state']);
 	
+					var event = (0, _graflow.Mapper)(function (msg) {
+						return [].concat(msg);
+					});
+	
+					//Identity()
+	
+					var eventState = (0, _graflow.Component)({
+						inputs: ['state', 'event'],
+						components: { state: Memory() },
+						connections: [['in.state', 'state.set'], ['in.event', 'state.get'], ['state', 'out']]
+					});
+	
 					var state = (0, _State2.default)({ post: postState });
 					var dom = (0, _Dom2.default)();
 					var events = (0, _Events2.default)(handlers);
-					var view = (0, _View2.default)(options.view, events);
+					var view = (0, _View2.default)(options.view, event);
 					var mapInputs = inputs.map(function (i) {
 						return ['map' + i, (0, _graflow.Mapper)(function (v) {
 							return [i, v];
@@ -2073,18 +2103,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					var outputDemuxer = _graflow.Demuxer.apply(undefined, _toConsumableArray(eventOutputs));
 	
-					var components = _extends({ state: state, dom: dom, events: events, view: view, comps: comps, outputDemuxer: outputDemuxer
-					}, toObject(mapInputs));
+					var components = _extends({ state: state, dom: dom, events: events, view: view, comps: comps,
+						outputDemuxer: outputDemuxer, eventState: eventState, event: event }, toObject(mapInputs));
 	
 					var inputConnections = flatMap(inputs.map(function (input) {
-						return [['in.' + input, 'map' + input], ['map' + input, 'events']];
+						return [['in.' + input, 'map' + input], ['map' + input, 'event']];
 					}));
 	
 					var outputConnections = eventOutputs.map(function (output) {
 						return ['outputDemuxer.' + output, 'out.' + output];
 					});
 	
-					var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'], ['comps.events', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
+					var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'],
+					//['comps.events', 'events'],
+	
+					['event', 'eventState.event'], ['comps.events', 'eventState.event'], ['state.state', 'eventState.state'], ['eventState', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
 	
 					return (0, _graflow.Component)({ inputs: inputs, outputs: outputs, components: components, connections: connections });
 				};
@@ -2287,7 +2320,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    view: function view(state) {
 	      return {
 	        tag: 'button',
-	        on: { click: ['click'] },
+	        on: { click: 'click' },
 	        content: 'Count: ' + state
 	      };
 	    }
