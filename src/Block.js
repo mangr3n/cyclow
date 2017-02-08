@@ -3,53 +3,35 @@ import State from './State'
 import Events from './Events'
 import View from './View'
 import BlockComponents from './BlockComponents'
-import { Component, Mapper, Chain, Demuxer } from 'graflow'
+import {Component, Mapper, Demuxer, Chain} from 'graflow'
 
 const toObject = kvs => kvs.reduce((obj, [k, v]) => {
   obj[k] = v
   return obj
 }, {})
 
-const OutputFilter = filters => Component({
-  outputs: Object.keys(filters),
-  components: Object.entries(filters).reduce((acc, [name, filter]) => {
-    acc[name] = Mapper(filter)
-    return acc
-  },{}),
-  connections: Object.keys(filters).map(v => ['in', v])
-})
-
 const flatMap = v => [].concat.apply([], v)
 
 const Block = options => {
-  const eventInputs = Object.keys(options.events || {})
-      .map(k => k.split('.', 2))
-      .filter(([prefix, signal]) => prefix === 'in')
-      .map(([prefix, signal]) => signal)
+  const eventInputs = options.inputs || []
   const inputs = eventInputs.concat('init')
 
-  const eventOutputs = Object.keys(options.out || {})
+  const eventOutputs = options.outputs || []
   const outputs = eventOutputs.concat('vdom')
 
-  const state   = State()
-  const dom     = Dom()
-  const events  = Events(options.events)
-  const view    = View(options.view, events)
+  const {state: postState, ...handlers} = options.on || {}
+
+  const state = State({post: postState})
+  const dom = Dom()
+  const events = Events(handlers)
+  const view = View(options.view, events)
   const mapInputs = inputs.map(i => [`map${i}`, Mapper(v => [i, v])])
 
   const comps = BlockComponents(options.components || {})
 
-  const outputFilter = Chain(
-    Mapper(state => Object.entries(options.out || {})
-      .reduce((acc, [name, map]) => {
-        acc[name] = map(state)
-        return acc
-      }, {})
-    ),
-    Demuxer(...eventOutputs)
-  )
+  const outputDemuxer = Demuxer(...eventOutputs)
 
-  const components = {state, dom, events, view, comps, outputFilter,
+  const components = {state, dom, events, view, comps, outputDemuxer,
     ...toObject(mapInputs)}
 
   const inputConnections = flatMap(inputs.map(input => [
@@ -57,7 +39,7 @@ const Block = options => {
   ]))
 
   const outputConnections = eventOutputs.map(output =>
-    [`outputFilter.${output}`, `out.${output}`]
+    [`outputDemuxer.${output}`, `out.${output}`]
   )
 
   const connections = inputConnections
@@ -65,10 +47,12 @@ const Block = options => {
     .concat([
       ['events.state', 'state'],
       ['events.components', 'comps'],
+      ['events.outputs', 'outputDemuxer'],
       ['comps.events', 'events'],
       ['comps.vdom', 'view.vdom'],
-      ['state', 'view.state'],
-      ['state', 'outputFilter'],
+      ['state.state', 'view.state'],
+      ['state.outputs', 'outputDemuxer'],
+      ['state.components', 'comps'],
       ['view', 'out.vdom']
     ])
 
