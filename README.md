@@ -10,7 +10,7 @@ This a simple counter example:
   import { Block, run } from 'cyclow'
 
   const Counter = () => Block({
-    events: {
+    on: {
       init:  () => state => 0,
       click: () => state => state + 1
     },
@@ -96,10 +96,11 @@ Arguments:
 ### <a name="Block"></a>```Block(options)```
 Arguments:
 - `options`:
+  - `inputs`
+  - `outputs`
   - `components`
-  - `events`
+  - `on`
   - `view`
-  - `out`
 
 Returns: A [graflow] component
 
