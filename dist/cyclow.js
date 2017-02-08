@@ -1422,27 +1422,56 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+	
 	var _graflow = __webpack_require__(4);
 	
-	var _graflow2 = _interopRequireDefault(_graflow);
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var toCanonicalItem = function toCanonicalItem(msg) {
+	  var m = typeof msg === 'string' ? [msg] : msg;
+	
+	  var _m = _slicedToArray(m, 2),
+	      name = _m[0],
+	      _m$ = _m[1],
+	      payload = _m$ === undefined ? {} : _m$;
+	
+	  var _name$split = name.split('.', 2),
+	      _name$split2 = _slicedToArray(_name$split, 2),
+	      componentName = _name$split2[0],
+	      _name$split2$ = _name$split2[1],
+	      signal = _name$split2$ === undefined ? 'default' : _name$split2$;
+	
+	  if (componentName === 'out') {
+	    return { outputs: _defineProperty({}, signal, payload) };
+	  } else {
+	    return { components: _defineProperty({}, componentName, _defineProperty({}, signal, payload)) };
+	  }
+	};
+	
+	var toCanonicalMessage = function toCanonicalMessage(msg) {
+	  return [].concat(msg).map(toCanonicalItem);
+	};
 	
 	var State = function State() {
-	  var initialState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	  var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
-	  var state = initialState;
+	  var post = options.post;
+	  var state = options.initial || {};
 	
-	  return (0, _graflow2.default)({
+	  return (0, _graflow.Component)({
+	    inputs: ['transformation'],
+	    outputs: ['state', 'outputs', 'components'],
 	    components: {
-	      transform: (0, _graflow2.default)(function (v, next) {
+	      transform: (0, _graflow.Component)(function (v, next) {
 	        state = v(state);
 	        next(state);
-	      })
+	      }),
+	      post: (0, _graflow.Chain)((0, _graflow.Component)(function (state, next) {
+	        if (post) next(toCanonicalMessage(post(state)));
+	      }), (0, _graflow.Serializer)(), (0, _graflow.Demuxer)('outputs', 'components'))
 	    },
-	    connections: [['in.transformation', 'transform'], ['transform', 'out.state']],
-	    inputs: ['transformation'],
-	    outputs: ['state']
+	    connections: [['in.transformation', 'transform'], ['transform', 'post'], ['transform', 'out.state'], ['post.outputs', 'out.outputs'], ['post.components', 'out.components']]
 	  });
 	};
 	
@@ -1595,6 +1624,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+	
 	var toObject = function toObject(kvs) {
 	  return kvs.reduce(function (obj, _ref) {
 	    var _ref2 = _slicedToArray(_ref, 2),
@@ -1606,51 +1637,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }, {});
 	};
 	
-	var OutputFilter = function OutputFilter(filters) {
-	  return (0, _graflow.Component)({
-	    outputs: Object.keys(filters),
-	    components: Object.entries(filters).reduce(function (acc, _ref3) {
-	      var _ref4 = _slicedToArray(_ref3, 2),
-	          name = _ref4[0],
-	          filter = _ref4[1];
-	
-	      acc[name] = (0, _graflow.Mapper)(filter);
-	      return acc;
-	    }, {}),
-	    connections: Object.keys(filters).map(function (v) {
-	      return ['in', v];
-	    })
-	  });
-	};
-	
 	var flatMap = function flatMap(v) {
 	  return [].concat.apply([], v);
 	};
 	
 	var Block = function Block(options) {
-	  var eventInputs = Object.keys(options.events || {}).map(function (k) {
-	    return k.split('.', 2);
-	  }).filter(function (_ref5) {
-	    var _ref6 = _slicedToArray(_ref5, 2),
-	        prefix = _ref6[0],
-	        signal = _ref6[1];
-	
-	    return prefix === 'in';
-	  }).map(function (_ref7) {
-	    var _ref8 = _slicedToArray(_ref7, 2),
-	        prefix = _ref8[0],
-	        signal = _ref8[1];
-	
-	    return signal;
-	  });
+	  var eventInputs = options.inputs || [];
 	  var inputs = eventInputs.concat('init');
 	
-	  var eventOutputs = Object.keys(options.out || {});
+	  var eventOutputs = options.outputs || [];
 	  var outputs = eventOutputs.concat('vdom');
 	
-	  var state = (0, _State2.default)();
+	  var _ref3 = options.on || {},
+	      postState = _ref3.state,
+	      handlers = _objectWithoutProperties(_ref3, ['state']);
+	
+	  var state = (0, _State2.default)({ post: postState });
 	  var dom = (0, _Dom2.default)();
-	  var events = (0, _Events2.default)(options.events);
+	  var events = (0, _Events2.default)(handlers);
 	  var view = (0, _View2.default)(options.view, events);
 	  var mapInputs = inputs.map(function (i) {
 	    return ['map' + i, (0, _graflow.Mapper)(function (v) {
@@ -1660,18 +1664,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  var comps = (0, _BlockComponents2.default)(options.components || {});
 	
-	  var outputFilter = (0, _graflow.Chain)((0, _graflow.Mapper)(function (state) {
-	    return Object.entries(options.out || {}).reduce(function (acc, _ref9) {
-	      var _ref10 = _slicedToArray(_ref9, 2),
-	          name = _ref10[0],
-	          map = _ref10[1];
+	  var outputDemuxer = _graflow.Demuxer.apply(undefined, _toConsumableArray(eventOutputs));
 	
-	      acc[name] = map(state);
-	      return acc;
-	    }, {});
-	  }), _graflow.Demuxer.apply(undefined, _toConsumableArray(eventOutputs)));
-	
-	  var components = _extends({ state: state, dom: dom, events: events, view: view, comps: comps, outputFilter: outputFilter
+	  var components = _extends({ state: state, dom: dom, events: events, view: view, comps: comps, outputDemuxer: outputDemuxer
 	  }, toObject(mapInputs));
 	
 	  var inputConnections = flatMap(inputs.map(function (input) {
@@ -1679,10 +1674,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }));
 	
 	  var outputConnections = eventOutputs.map(function (output) {
-	    return ['outputFilter.' + output, 'out.' + output];
+	    return ['outputDemuxer.' + output, 'out.' + output];
 	  });
 	
-	  var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['comps.events', 'events'], ['comps.vdom', 'view.vdom'], ['state', 'view.state'], ['state', 'outputFilter'], ['view', 'out.vdom']]);
+	  var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'], ['comps.events', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
 	
 	  return (0, _graflow.Component)({ inputs: inputs, outputs: outputs, components: components, connections: connections });
 	};

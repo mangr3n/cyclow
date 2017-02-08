@@ -1,3 +1,9 @@
+### [0.3.1](https://github.com/pmros/cyclow/releases/tag/v0.3.1)
+
+- Rename `events` to `on`
+- Add a `state` event
+- More samples
+
 ### [0.3.0](https://github.com/pmros/cyclow/releases/tag/v0.3.0)
 
 - Support for nested components
