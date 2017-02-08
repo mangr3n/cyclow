@@ -40,7 +40,7 @@ You can find even more samples at [JS Comp](http://blog.krawaller.se/jscomp/) an
 ## Why cyclow?
 There are many JavaScript frameworks so... why another one? Well I really like [Cycle.js]. It's a nice reactive framework. [TSERS] is like [Cycle.js] and it adds a simple state manager and another features. But both are too [pure](https://en.wikipedia.org/wiki/Pure_function) (in the functional programmming sense) for me.
 
-With **cyclow** instead of thinking in a big global model and pure functions, you have to think in components with inputs, outputs and their own state (something like an electronic circuit). I think cyclow is more intuitive and easier. You can compare cyclow and [Cycle.js] samples at [JS Comp].
+With **cyclow** instead of thinking in a big global model and pure functions, you have to think in components with inputs, outputs and their own state (something like an electronic circuit). I think cyclow is more intuitive and easier while it's still reactive and quite declarative. You can compare cyclow and [Cycle.js] samples at [JS Comp].
 
 ## How it works?
 Block is a graflow component factory that creates a component with a structure like this:
