@@ -22,7 +22,7 @@ const ComponentWrapper = (comp, name) => {
   return result
 }
 
-const post = Chain(
+const Post = () => Chain(
   Component((v, next) => {
     const [compName, msg] = Object.entries(v)[0]
     const [signal, value] = Object.entries(msg)[0]
@@ -49,7 +49,7 @@ const BlockComponents = comps => {
   const components = {
     demuxer: Demuxer(...compsNames),
     ...wrappedComps,
-    post
+    post: Post()
   }
 
   const connections = [
