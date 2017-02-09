@@ -1765,22 +1765,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return result;
 	};
 	
-	var post = (0, _graflow.Chain)((0, _graflow.Component)(function (v, next) {
-	  var _Object$entries$ = _slicedToArray(Object.entries(v)[0], 2),
-	      compName = _Object$entries$[0],
-	      msg = _Object$entries$[1];
+	var Post = function Post() {
+	  return (0, _graflow.Chain)((0, _graflow.Component)(function (v, next) {
+	    var _Object$entries$ = _slicedToArray(Object.entries(v)[0], 2),
+	        compName = _Object$entries$[0],
+	        msg = _Object$entries$[1];
 	
-	  var _Object$entries$2 = _slicedToArray(Object.entries(msg)[0], 2),
-	      signal = _Object$entries$2[0],
-	      value = _Object$entries$2[1];
+	    var _Object$entries$2 = _slicedToArray(Object.entries(msg)[0], 2),
+	        signal = _Object$entries$2[0],
+	        value = _Object$entries$2[1];
 	
-	  if (signal === 'vdom') {
-	    next({ vdom: _defineProperty({}, compName, value) });
-	  } else {
-	    var name = signal === 'default' ? compName : compName + '.' + signal;
-	    next({ events: [name, value] });
-	  }
-	}), (0, _graflow.Demuxer)('events', 'vdom'));
+	    if (signal === 'vdom') {
+	      next({ vdom: _defineProperty({}, compName, value) });
+	    } else {
+	      var name = signal === 'default' ? compName : compName + '.' + signal;
+	      next({ events: [name, value] });
+	    }
+	  }), (0, _graflow.Demuxer)('events', 'vdom'));
+	};
 	
 	var BlockComponents = function BlockComponents(comps) {
 	  if (Object.keys(comps).length === 0) return (0, _graflow.Demuxer)('events', 'vdom');
@@ -1798,7 +1800,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var components = _extends({
 	    demuxer: _graflow.Demuxer.apply(undefined, _toConsumableArray(compsNames))
 	  }, wrappedComps, {
-	    post: post
+	    post: Post()
 	  });
 	
 	  var connections = [['in', 'demuxer'], ['post.vdom', 'out.vdom'], ['post.events', 'out.events']].concat(flatMap(compsNames.map(function (n) {

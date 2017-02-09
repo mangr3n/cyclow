@@ -1,3 +1,7 @@
+### [0.3.3](https://github.com/pmros/cyclow/releases/tag/v0.3.3)
+
+- Hot fix for a issue about nested components
+
 ### [0.3.2](https://github.com/pmros/cyclow/releases/tag/v0.3.2)
 
 - Pass current state to event handler
