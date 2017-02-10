@@ -284,7 +284,8 @@ return /******/ (function(modules) { // webpackBootstrap
 						selectionEnd: e.selectionEnd,
 						selectionDirection: e.selectionDirection,
 						scrollTop: e.scrollTop,
-						scrollLeft: e.scrollLeft
+						scrollLeft: e.scrollLeft,
+						value: e.value
 					};
 				};
 	
@@ -1882,14 +1883,17 @@ return /******/ (function(modules) { // webpackBootstrap
 				};
 	
 				var Events = function Events(events) {
-					return (0, _graflow.Chain)((0, _graflow.Mapper)(function (_ref) {
+					return (0, _graflow.Chain)((0, _graflow.Component)(function (_ref, next) {
 						var _ref2 = _slicedToArray(_ref, 2),
 						    _ref2$ = _slicedToArray(_ref2[0], 2),
 						    e = _ref2$[0],
 						    payload = _ref2$[1],
 						    state = _ref2[1];
 	
-						return toCanonicalMessage(events[e](payload, state));
+						if (events[e]) {
+							var v = events[e](payload, state || {});
+							if (v !== undefined) next(toCanonicalMessage(v));
+						}
 					}), (0, _graflow.Serializer)(), (0, _graflow.Demuxer)('state', 'components', 'outputs'));
 				};
 	
@@ -1915,11 +1919,13 @@ return /******/ (function(modules) { // webpackBootstrap
 				var _graflow = __webpack_require__(4);
 	
 				var setComponent = function setComponent(vdom, component) {
-					if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object' && !vdom.component) vdom.component = component;
-					if (Array.isArray(vdom.content)) {
-						vdom.content.map(function (e) {
+					if (Array.isArray(vdom)) {
+						vdom.map(function (e) {
 							return setComponent(e, component);
 						});
+					} else {
+						if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object' && !vdom.component) vdom.component = component;
+						if (vdom.content) setComponent(vdom.content, component);
 					}
 					return vdom;
 				};
@@ -1932,15 +1938,20 @@ return /******/ (function(modules) { // webpackBootstrap
 							hub: (0, _graflow.Hub)('vdom', 'state'),
 							globalAccumulator: (0, _graflow.Accumulator)(),
 							view: (0, _graflow.Mapper)(function (_ref) {
-								var state = _ref.state,
-								    vdom = _ref.vdom;
+								var _ref$state = _ref.state,
+								    state = _ref$state === undefined ? {} : _ref$state,
+								    _ref$vdom = _ref.vdom,
+								    vdom = _ref$vdom === undefined ? {} : _ref$vdom;
 								return view(state, vdom);
+							}),
+							filter: (0, _graflow.Filter)(function (v) {
+								return v !== undefined;
 							}),
 							post: (0, _graflow.Mapper)(function (vdom) {
 								return setComponent(vdom, component);
 							})
 						},
-						connections: [['in.vdom', 'vdomAccumulator'], ['vdomAccumulator', 'hub.vdom'], ['in.state', 'hub.state'], ['hub', 'globalAccumulator'], ['globalAccumulator', 'view'], ['view', 'post'], ['post', 'out']]
+						connections: [['in.vdom', 'vdomAccumulator'], ['vdomAccumulator', 'hub.vdom'], ['in.state', 'hub.state'], ['hub', 'globalAccumulator'], ['globalAccumulator', 'view'], ['view', 'filter'], ['filter', 'post'], ['post', 'out']]
 					});
 				};
 	
@@ -2081,8 +2092,6 @@ return /******/ (function(modules) { // webpackBootstrap
 						return [].concat(msg);
 					});
 	
-					//Identity()
-	
 					var eventState = (0, _graflow.Component)({
 						inputs: ['state', 'event'],
 						components: { state: Memory() },
@@ -2114,10 +2123,7 @@ return /******/ (function(modules) { // webpackBootstrap
 						return ['outputDemuxer.' + output, 'out.' + output];
 					});
 	
-					var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'],
-					//['comps.events', 'events'],
-	
-					['event', 'eventState.event'], ['comps.events', 'eventState.event'], ['state.state', 'eventState.state'], ['eventState', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
+					var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'], ['event', 'eventState.event'], ['comps.events', 'eventState.event'], ['state.state', 'eventState.state'], ['eventState', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
 	
 					return (0, _graflow.Component)({ inputs: inputs, outputs: outputs, components: components, connections: connections });
 				};

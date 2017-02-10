@@ -1,3 +1,9 @@
+### [0.3.4](https://github.com/pmros/cyclow/releases/tag/v0.3.4)
+
+- Arrays as vdom
+- Event handlers can return nothing
+- Add Composition sample
+
 ### [0.3.3](https://github.com/pmros/cyclow/releases/tag/v0.3.3)
 
 - Hot fix for a issue about nested components
