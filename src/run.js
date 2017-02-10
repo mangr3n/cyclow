@@ -1,10 +1,10 @@
-import SimpleRenderer from './SimpleRenderer'
+import SnabbdomRenderer from './SnabbdomRenderer'
 import Component from 'graflow'
 
 const run = (MainComponent, opts={}) => {
   document.addEventListener("DOMContentLoaded", () => {
     const init = opts.init || {}
-    const Renderer = opts.renderer || SimpleRenderer
+    const Renderer = opts.renderer || SnabbdomRenderer
 
     const comp = Component({
       outputs: [],
