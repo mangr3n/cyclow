@@ -1,6 +1,5 @@
 export {default as run} from './run'
-export {default as SimpleRenderer} from './SimpleRenderer'
-export {default as Dom} from './Dom'
+export {default as SnabbdomRenderer} from './SnabbdomRenderer'
 export {default as State} from './State'
 export {default as Events} from './Events'
 export {default as View} from './View'

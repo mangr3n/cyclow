@@ -1,6 +1,5 @@
 import {Component, Chain, Mapper, Demuxer, Serializer, Hub} from 'graflow'
-
-const flatMap = v => [].concat.apply([], v)
+import {flatMap} from './utils'
 
 const ComponentWrapper = (comp, name) => {
   const compInputs = Object.keys(comp.inputs)

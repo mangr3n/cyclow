@@ -1,9 +1,9 @@
-import Dom from './Dom'
 import State from './State'
 import Events from './Events'
 import View from './View'
 import BlockComponents from './BlockComponents'
 import {Component, Mapper, Demuxer, Chain, Hub, Filter} from 'graflow'
+import {flatMap} from './utils'
 
 const Memory = () => {
   let memory
@@ -25,8 +25,6 @@ const toObject = kvs => kvs.reduce((obj, [k, v]) => {
   obj[k] = v
   return obj
 }, {})
-
-const flatMap = v => [].concat.apply([], v)
 
 const Block = options => {
   const eventInputs = options.inputs || []
@@ -50,7 +48,6 @@ const Block = options => {
   })
 
   const state = State({post: postState})
-  const dom = Dom()
   const events = Events(handlers)
   const view = View(options.view, event)
   const mapInputs = inputs.map(i => [`map${i}`, Mapper(v => [i, v])])
@@ -59,7 +56,7 @@ const Block = options => {
 
   const outputDemuxer = Demuxer(...eventOutputs)
 
-  const components = {state, dom, events, view, comps,
+  const components = {state, events, view, comps,
     outputDemuxer, eventState, event, ...toObject(mapInputs)
   }
 
