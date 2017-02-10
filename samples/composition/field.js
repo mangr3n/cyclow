@@ -7,7 +7,10 @@ const Field = () => Block({
   on: {
     init: instruction => [state => ({instruction, input: ''}), 'confirm.init'],
     text: newText => state => ({...state, input: newText}),
-    'confirm.confirmation': (_, {input}) => [['out.submission', input]],
+    'confirm.confirmation': (_, {input}) => [
+      ['out.submission', input],
+      state => ({...state, input: ''})
+    ],
     state: ({input}) => [['confirm.disabled', !input]]
   },
   view: ({instruction, input}, {confirm}) => ({content: [
