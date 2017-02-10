@@ -81,14 +81,9 @@ Event messages are arrays with two items:
 - **payload** (optional)
 
 ## <a name="renderer"></a> Renderer
-A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as a input and it converts into a Real DOM Element and it updates the HTML document.
+A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as a input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
 
-A renderer is a function that it takes `target`, that the DOM element id where you want to instert into the Viirtual DOM Element. By default `target` is `body` document.
-
-### SimpleRenderer
-Currently, cyclow only provides you a renderer, called `SimpleRenderer`. Every time it receives [Virtual DOM Element](#virtual-dom-element), it removes the prevously generated DOM and generates and instert it again.
-
-That is not very efficient, but it's simple and it works well with little samples. `SimpleRenderer` is inspired by [real-dom](https://github.com/danculley/real-dom). A more efficient approach would be using a diff/patching algorithm like [virtual-dom](https://github.com/Matt-Esch/virtual-dom) or [snabbdom](https://github.com/snabbdom/snabbdom) do. It's in the [TODO](#TODO) list.
+A renderer is a function that it takes `target`, that the DOM element id where you want to instert into the Virtual DOM Element. By default `target` is `body` document.
 
 ## API
 
@@ -112,11 +107,11 @@ Arguments:
 Returns: A [graflow] component
 
 ## <a name="TODO"></a> TODO
+- [x] Virtual DOM diff and patching
 - [ ] A cool logo
 - [ ] JavaScript Standard Style
 - [ ] More documentation
 - [ ] More samples
-- [ ] Virtual DOM diff and patching
 - [ ] Functional tests
 
 [graflow]: https://github.com/pmros/graflow

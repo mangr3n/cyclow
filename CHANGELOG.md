@@ -1,3 +1,8 @@
+### [0.4.0](https://github.com/pmros/cyclow/releases/tag/v0.4.0)
+
+- Snabbdom as default renderer
+- Remove SimpleRenderer
+
 ### [0.3.4](https://github.com/pmros/cyclow/releases/tag/v0.3.4)
 
 - Arrays as vdom
