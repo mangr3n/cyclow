@@ -8,6 +8,7 @@ const cacheProps = e => ({
   , selectionDirection:e.selectionDirection
   , scrollTop:e.scrollTop
   , scrollLeft:e.scrollLeft
+  , value: e.value
 })
 
 const SimpleRenderer = (targetId) => {
@@ -15,7 +16,7 @@ const SimpleRenderer = (targetId) => {
 
   return Component(vdom => {
     const dom = buildDom(vdom)
-
+    
     const focusedId = (document.activeElement || {id:''}).id
     const identifiedElements =
       [...document.querySelectorAll('[id]')].map(cacheProps)
