@@ -3,8 +3,7 @@ import State from './State'
 import Events from './Events'
 import View from './View'
 import BlockComponents from './BlockComponents'
-import {Component, Mapper, Demuxer, Chain,
-  Hub, Filter, Accumulator, Identity} from 'graflow'
+import {Component, Mapper, Demuxer, Chain, Hub, Filter} from 'graflow'
 
 const Memory = () => {
   let memory
@@ -40,8 +39,6 @@ const Block = options => {
 
   const event = Mapper(msg => [].concat(msg))
 
-  //Identity()
-
   const eventState = Component({
     inputs: ['state', 'event'],
     components: {state: Memory()},
@@ -63,7 +60,8 @@ const Block = options => {
   const outputDemuxer = Demuxer(...eventOutputs)
 
   const components = {state, dom, events, view, comps,
-    outputDemuxer, eventState, event, ...toObject(mapInputs)}
+    outputDemuxer, eventState, event, ...toObject(mapInputs)
+  }
 
   const inputConnections = flatMap(inputs.map(input => [
     [`in.${input}`, `map${input}`],
@@ -80,13 +78,10 @@ const Block = options => {
       ['events.state', 'state'],
       ['events.components', 'comps'],
       ['events.outputs', 'outputDemuxer'],
-      //['comps.events', 'events'],
-
       ['event', 'eventState.event'],
       ['comps.events', 'eventState.event'],
       ['state.state', 'eventState.state'],
       ['eventState', 'events'],
-
       ['comps.vdom', 'view.vdom'],
       ['state.state', 'view.state'],
       ['state.outputs', 'outputDemuxer'],
