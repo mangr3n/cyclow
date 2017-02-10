@@ -1,4 +1,4 @@
-import {Chain, Mapper, Demuxer, Serializer} from 'graflow'
+import {Chain, Component, Demuxer, Serializer} from 'graflow'
 
 const toCanonicalItem = msg => {
   let m = msg
@@ -23,8 +23,11 @@ const toCanonicalItem = msg => {
 const toCanonicalMessage = msg => [].concat(msg).map(toCanonicalItem)
 
 const Events = events => Chain(
-  Mapper(([[e, payload], state]) => {
-    return toCanonicalMessage(events[e](payload, state))
+  Component(([[e, payload], state], next) => {
+    if (events[e]) {
+      const v = events[e](payload, state || {})
+      if(v !== undefined) next(toCanonicalMessage(v))
+    }
   }),
   Serializer(),
   Demuxer('state', 'components', 'outputs')
