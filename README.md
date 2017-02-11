@@ -99,7 +99,7 @@ Arguments:
 - `MainComponent`: A component factory.
 - `options`:
   - `target` (`document.body` by default)
-  - `renderer` (`SimpleRenderer` by default)
+  - `renderer` (`SnabbdomRenderer` by default)
   - `init` (`{}` by default)
 
 ### <a name="Block"></a>```Block(options)```
