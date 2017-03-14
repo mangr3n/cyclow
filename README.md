@@ -42,12 +42,18 @@ There are many JavaScript frameworks so... why another one? Well I really like [
 
 With **cyclow** instead of thinking in a big global model and pure functions, you have to think in components with inputs, outputs and their own state (something like an electronic circuit). I think cyclow is more intuitive and easier while it's still reactive and quite declarative. You can compare cyclow and [Cycle.js] samples at [JS Comp].
 
+**cyclow** goal is to help you to create applications that are:
+- Declarative
+- Easy to code
+- Easy to read
+- Scalable
+
 ## <a name="virtual-dom-element"></a>Virtual DOM Element
 cyclow represents DOM elements as Virtual DOM Elements, that is a simple Javascript object with the following (optional) properties:
-- **tag**: HTML tag (default is `div`)
-- **attrs**: Attributes (like `id`, `class` or `style`).
-- **on**: Events handlers (like `click`). It can be just an [event message](#event-messages) or a function that receive the DOM event and a function to send an event message.
-- **content**: Content can be just text, a [Virtual DOM Element](#virtual-dom-element) or an array of Virtual DOM Elements.
+- `tag`: HTML tag (default is `div`)
+- `attrs`: Attributes (like `id`, `class` or `style`).
+- `on`: Events handlers (like `click`). It can be just an [event message](#event-messages) or a function that receive the DOM event and a function to send an event message.
+- `content`: Content can be just text, a [Virtual DOM Element](#virtual-dom-element) or an array of Virtual DOM Elements.
 
 This is a virtual DOM element example:
 ```js
@@ -70,7 +76,7 @@ Arguments:
 - `MainComponent`: A component factory.
 - `options`:
   - `target` (`document.body` by default)
-  - `renderer` (`SimpleRenderer` by default)
+  - `renderer` (`SnabbdomRenderer` by default)
   - `init` (`{}` by default)
 
 ### <a name="Block"></a>```Block(options)```
@@ -84,6 +90,8 @@ Returns: A [graflow] component
 
 ## <a name="TODO"></a> TODO
 - [x] Virtual DOM diff and patching
+- [x] A way to focus a DOM element
+- [ ] A [TodoMVC](http://todomvc.com) sample
 - [ ] A cool logo
 - [ ] JavaScript Standard Style
 - [ ] More documentation
