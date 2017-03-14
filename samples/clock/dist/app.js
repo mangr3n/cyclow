@@ -150,7 +150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _State = __webpack_require__(13);
+				var _State = __webpack_require__(14);
 	
 				Object.defineProperty(exports, 'State', {
 					enumerable: true,
@@ -159,7 +159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Events = __webpack_require__(14);
+				var _Events = __webpack_require__(15);
 	
 				Object.defineProperty(exports, 'Events', {
 					enumerable: true,
@@ -168,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _View = __webpack_require__(15);
+				var _View = __webpack_require__(16);
 	
 				Object.defineProperty(exports, 'View', {
 					enumerable: true,
@@ -177,7 +177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Block = __webpack_require__(16);
+				var _Block = __webpack_require__(17);
 	
 				Object.defineProperty(exports, 'Block', {
 					enumerable: true,
@@ -207,8 +207,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _graflow = __webpack_require__(3);
 	
-				var _graflow2 = _interopRequireDefault(_graflow);
-	
 				function _interopRequireDefault(obj) {
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
@@ -216,20 +214,22 @@ return /******/ (function(modules) { // webpackBootstrap
 				var run = function run(MainComponent) {
 					var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-					document.addEventListener("DOMContentLoaded", function () {
+					document.addEventListener('DOMContentLoaded', function () {
 						var init = opts.init || {};
 						var Renderer = opts.renderer || _SnabbdomRenderer2.default;
 	
-						var comp = (0, _graflow2.default)({
-							outputs: [],
+						var comp = (0, _graflow.Component)({
 							components: {
 								main: MainComponent(),
-								renderer: Renderer(opts.target)
+								renderer: Renderer(opts.target),
+								outMapper: (0, _graflow.Component)(function (v, next) {
+									if (v.vdom) next(v.vdom);
+								})
 							},
-							connections: [['in', 'main.init'], ['main.vdom', 'renderer']]
+							connections: [['in', 'main'], ['main', 'outMapper'], ['outMapper', 'renderer']]
 						});
 	
-						comp.in.default.send(init);
+						comp.send({ init: init });
 					});
 				};
 	
@@ -245,6 +245,16 @@ return /******/ (function(modules) { // webpackBootstrap
 				Object.defineProperty(exports, "__esModule", {
 					value: true
 				});
+	
+				var _extends = Object.assign || function (target) {
+					for (var i = 1; i < arguments.length; i++) {
+						var source = arguments[i];for (var key in source) {
+							if (Object.prototype.hasOwnProperty.call(source, key)) {
+								target[key] = source[key];
+							}
+						}
+					}return target;
+				};
 	
 				var _slicedToArray = function () {
 					function sliceIterator(arr, i) {
@@ -278,19 +288,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _utils = __webpack_require__(4);
 	
-				var _snabbdom = __webpack_require__(5);
+				var _Message = __webpack_require__(5);
+	
+				var _snabbdom = __webpack_require__(6);
 	
 				var _snabbdom2 = _interopRequireDefault(_snabbdom);
 	
-				var _eventlisteners = __webpack_require__(11);
+				var _eventlisteners = __webpack_require__(12);
 	
 				var _eventlisteners2 = _interopRequireDefault(_eventlisteners);
 	
-				var _props = __webpack_require__(12);
+				var _props = __webpack_require__(13);
 	
 				var _props2 = _interopRequireDefault(_props);
 	
-				var _h = __webpack_require__(9);
+				var _h = __webpack_require__(10);
 	
 				var _h2 = _interopRequireDefault(_h);
 	
@@ -298,25 +310,43 @@ return /******/ (function(modules) { // webpackBootstrap
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
 	
-				var getHandlers = function getHandlers(handlers, component) {
-					return Object.entries(handlers).reduce(function (acc, _ref) {
-						var _ref2 = _slicedToArray(_ref, 2),
-						    event = _ref2[0],
-						    handler = _ref2[1];
+				var messageConverter = function messageConverter(arg) {
+					if ((0, _utils.isString)(arg)) return [['dom', arg, {}]];
+					if ((0, _utils.isObject)(arg)) {
+						return Object.entries(arg).map(function (_ref) {
+							var _ref2 = _slicedToArray(_ref, 2),
+							    name = _ref2[0],
+							    value = _ref2[1];
 	
-						var next = component ? component.in.default.send : function () {};
+							return ['dom', name, value];
+						});
+					}
+					return [['dom', 'default', arg]];
+				};
+	
+				var getHandlers = function getHandlers(handlers, component) {
+					return Object.entries(handlers).reduce(function (acc, _ref3) {
+						var _ref4 = _slicedToArray(_ref3, 2),
+						    event = _ref4[0],
+						    handler = _ref4[1];
+	
+						var send = component.send;
+	
+						var next = component ? function (v) {
+							return send((0, _Message.Message)('dom', 'event', (0, _Message.toMessage)(v, messageConverter)));
+						} : function () {};
+	
 						acc[event] = function (e) {
 							return typeof handler === 'function' ? handler(e, next) : next(handler);
 						};
+	
 						return acc;
 					}, {});
 				};
 	
 				var toSnabbdom = function toSnabbdom(vdom) {
-					if (typeof vdom === 'string') return vdom;
-					if (Array.isArray(vdom)) {
-						return (0, _utils.flatMap)(vdom).map(toSnabbdom);
-					}
+					if ((0, _utils.isString)(vdom)) return vdom;
+					if ((0, _utils.isArray)(vdom)) return (0, _utils.flatten)(vdom).filter(_utils.isDefined).map(toSnabbdom);
 	
 					var _vdom$tag = vdom.tag,
 					    tag = _vdom$tag === undefined ? 'div' : _vdom$tag,
@@ -330,7 +360,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					var handlers = getHandlers(on, component);
 	
-					return (0, _h2.default)(tag, { props: attrs, on: handlers }, toSnabbdom(content));
+					var send = component.send;
+	
+					var hook = vdom.root ? { hook: { create: function create(_, vnode) {
+								send((0, _Message.Message)('dom', 'node', vnode.elm));
+							} } } : {};
+	
+					return (0, _h2.default)(tag, _extends({ props: attrs, on: handlers }, hook), toSnabbdom(content));
 				};
 	
 				var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
@@ -426,7 +462,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Mapper = __webpack_require__(2);
+							var _Mapper = __webpack_require__(3);
 	
 							Object.defineProperty(exports, 'Mapper', {
 								enumerable: true,
@@ -435,7 +471,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Filter = __webpack_require__(3);
+							var _Filter = __webpack_require__(4);
 	
 							Object.defineProperty(exports, 'Filter', {
 								enumerable: true,
@@ -444,7 +480,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Counter = __webpack_require__(4);
+							var _Counter = __webpack_require__(5);
 	
 							Object.defineProperty(exports, 'Counter', {
 								enumerable: true,
@@ -453,7 +489,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Accumulator = __webpack_require__(5);
+							var _Accumulator = __webpack_require__(6);
 	
 							Object.defineProperty(exports, 'Accumulator', {
 								enumerable: true,
@@ -462,7 +498,16 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Hub = __webpack_require__(6);
+							var _Memorizer = __webpack_require__(7);
+	
+							Object.defineProperty(exports, 'Memorizer', {
+								enumerable: true,
+								get: function get() {
+									return _interopRequireDefault(_Memorizer).default;
+								}
+							});
+	
+							var _Hub = __webpack_require__(12);
 	
 							Object.defineProperty(exports, 'Hub', {
 								enumerable: true,
@@ -471,7 +516,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Muxer = __webpack_require__(7);
+							var _Muxer = __webpack_require__(13);
 	
 							Object.defineProperty(exports, 'Muxer', {
 								enumerable: true,
@@ -480,7 +525,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Demuxer = __webpack_require__(9);
+							var _Demuxer = __webpack_require__(11);
 	
 							Object.defineProperty(exports, 'Demuxer', {
 								enumerable: true,
@@ -489,7 +534,16 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Iterator = __webpack_require__(10);
+							var _SortedDemuxer = __webpack_require__(8);
+	
+							Object.defineProperty(exports, 'SortedDemuxer', {
+								enumerable: true,
+								get: function get() {
+									return _interopRequireDefault(_SortedDemuxer).default;
+								}
+							});
+	
+							var _Iterator = __webpack_require__(14);
 	
 							Object.defineProperty(exports, 'Iterator', {
 								enumerable: true,
@@ -498,7 +552,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Serializer = __webpack_require__(11);
+							var _Serializer = __webpack_require__(10);
 	
 							Object.defineProperty(exports, 'Serializer', {
 								enumerable: true,
@@ -507,7 +561,16 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Repeater = __webpack_require__(12);
+							var _ArraySerializer = __webpack_require__(15);
+	
+							Object.defineProperty(exports, 'ArraySerializer', {
+								enumerable: true,
+								get: function get() {
+									return _interopRequireDefault(_ArraySerializer).default;
+								}
+							});
+	
+							var _Repeater = __webpack_require__(16);
 	
 							Object.defineProperty(exports, 'Repeater', {
 								enumerable: true,
@@ -516,7 +579,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _UniqueFilter = __webpack_require__(13);
+							var _UniqueFilter = __webpack_require__(17);
 	
 							Object.defineProperty(exports, 'UniqueFilter', {
 								enumerable: true,
@@ -525,7 +588,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Logger = __webpack_require__(14);
+							var _Logger = __webpack_require__(18);
 	
 							Object.defineProperty(exports, 'Logger', {
 								enumerable: true,
@@ -534,7 +597,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Chain = __webpack_require__(8);
+							var _Chain = __webpack_require__(9);
 	
 							Object.defineProperty(exports, 'Chain', {
 								enumerable: true,
@@ -543,7 +606,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Checker = __webpack_require__(15);
+							var _Checker = __webpack_require__(19);
 	
 							Object.defineProperty(exports, 'Checker', {
 								enumerable: true,
@@ -552,7 +615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Guard = __webpack_require__(16);
+							var _Guard = __webpack_require__(20);
 	
 							Object.defineProperty(exports, 'Guard', {
 								enumerable: true,
@@ -561,7 +624,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Identity = __webpack_require__(17);
+							var _Identity = __webpack_require__(21);
 	
 							Object.defineProperty(exports, 'Identity', {
 								enumerable: true,
@@ -570,7 +633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Delayer = __webpack_require__(18);
+							var _Delayer = __webpack_require__(22);
 	
 							Object.defineProperty(exports, 'Delayer', {
 								enumerable: true,
@@ -579,7 +642,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}
 							});
 	
-							var _Ticker = __webpack_require__(19);
+							var _Ticker = __webpack_require__(23);
 	
 							Object.defineProperty(exports, 'Ticker', {
 								enumerable: true,
@@ -595,7 +658,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							/***/
 						},
 						/* 1 */
-						/***/function (module, exports) {
+						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
 	
@@ -629,177 +692,168 @@ return /******/ (function(modules) { // webpackBootstrap
 								};
 							}();
 	
-							var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-								return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
-							} : function (obj) {
-								return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
-							};
+							var _utils = __webpack_require__(2);
 	
-							var toComponent = function toComponent(arg) {
-								if ((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object') return arg;
-								var node = toNode(arg);
+							var componentFromFunction = function componentFromFunction(func) {
+								var node = toNode(func);
+	
 								return {
-									start: function start() {
-										var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-										return node.received(v);
+									send: function send() {
+										var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+										return node.send(value);
+									},
+									on: function on(handler) {
+										return node.on(handler);
 									},
 									inputs: { default: node },
-									outputs: { default: node },
-									in: { default: node },
-									out: { default: node }
+									outputs: { default: node }
 								};
 							};
 	
 							var toNode = function toNode(arg) {
-								var result = arg;
-								if (typeof arg === 'function') {
-									result = node(arg);
-								}
-								return result;
+								if ((0, _utils.isFunction)(arg)) return node(arg);
+								return arg;
 							};
 	
 							var node = function node(onNext) {
 								var queue = [];
 								var listeners = [];
-								var next = function next(v) {
-									listeners.forEach(function (l) {
-										return l.addToQueue(v);
+	
+								var broadcast = function broadcast(arg) {
+									var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+									arg.forEach(function (l) {
+										return l.addToQueue(value);
 									});
-									listeners.forEach(function (l) {
+									arg.forEach(function (l) {
 										return l.processQueue();
 									});
 								};
 	
-								var obj = {
-									addListener: function addListener(listener) {
-										listeners.push(toNode(listener));
-									},
-									on: function on(listener) {
-										obj.addListener(listener);
-									},
-									connect: function connect(listener) {
-										obj.addListener(listener);
-									},
-									addToQueue: function addToQueue(v) {
-										queue.push(v);
-									},
-									received: function received() {
-										var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	
-										obj.addToQueue(v);
-										obj.processQueue();
-									},
-									send: function send() {
-										var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-										obj.received(v);
-									},
-									processQueue: function processQueue() {
-										var values = queue.length;
-										for (var i = 1; i <= values; i++) {
-											var v = queue.shift();
-											onNext(v, next);
-										}
-									}
+								var next = function next(v) {
+									return broadcast(listeners, v);
 								};
 	
-								return obj;
+								var addListener = function addListener(node) {
+									return listeners.push(node);
+								};
+								var on = function on(handler) {
+									return addListener(toNode(function (v) {
+										return handler(v);
+									}));
+								};
+								var addToQueue = function addToQueue(v) {
+									return queue.push(v);
+								};
+								var processQueue = function processQueue() {
+									return (0, _utils.applyAndEmpty)(queue, function (v) {
+										return onNext(v, next);
+									});
+								};
+	
+								var send = function send() {
+									var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	
+									addToQueue(value);
+									processQueue();
+								};
+	
+								return { on: on, send: send, addListener: addListener, addToQueue: addToQueue, processQueue: processQueue };
 							};
 	
-							var select = function select(name, components) {
-								var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'input';
+							var selectNode = function selectNode(name, components) {
+								var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'inputs';
 	
-								var direction = io === 'input' ? 'inputs' : 'outputs';
+								var direction = io === 'inputs' ? 'inputs' : 'outputs';
 	
 								var _name$split = name.split('.', 2),
 								    _name$split2 = _slicedToArray(_name$split, 2),
 								    componentName = _name$split2[0],
-								    streamName = _name$split2[1];
+								    _name$split2$ = _name$split2[1],
+								    nodeName = _name$split2$ === undefined ? 'default' : _name$split2$;
 	
-								var ioStreams = void 0;
 								var component = components[componentName];
-	
-								if (component !== undefined) {
-									ioStreams = component[direction];
-									if (ioStreams !== undefined && streamName === undefined) {
-										var ioNames = Object.keys(ioStreams);
-										if (ioNames.length === 1) streamName = ioNames[0];
-									}
+								if ((0, _utils.isUndefined)(component)) {
+									throw new Error(componentName + ' component not found!');
 								}
 	
-								if (ioStreams === undefined || ioStreams[streamName] === undefined) {
-									throw new Error(io + ' stream ' + name + ' not found!');
+								var nodes = component[direction];
+	
+								if ((0, _utils.isUndefined)(nodes) || (0, _utils.isUndefined)(nodes[nodeName])) {
+									throw new Error(name + ' port not found!');
 								}
 	
-								return ioStreams[streamName];
+								return nodes[nodeName];
 							};
 	
-							var component2 = function component2(_ref) {
-								var components = _ref.components,
-								    _ref$connections = _ref.connections,
-								    connections = _ref$connections === undefined ? [] : _ref$connections,
-								    _ref$inputs = _ref.inputs,
-								    inputs = _ref$inputs === undefined ? ['default'] : _ref$inputs,
-								    _ref$outputs = _ref.outputs,
-								    outputs = _ref$outputs === undefined ? ['default'] : _ref$outputs;
+							var componentFromObject = function componentFromObject(obj) {
+								var components = obj.components,
+								    _obj$connections = obj.connections,
+								    connections = _obj$connections === undefined ? [] : _obj$connections,
+								    _obj$inputs = obj.inputs,
+								    inputs = _obj$inputs === undefined ? [] : _obj$inputs,
+								    _obj$outputs = obj.outputs,
+								    outputs = _obj$outputs === undefined ? [] : _obj$outputs;
 	
-								Object.keys(components).forEach(function (key) {
-									components[key] = toComponent(components[key]);
-								});
+								var inputNames = (0, _utils.unique)(inputs.concat('default'));
+								var outputNames = (0, _utils.unique)(outputs.concat('default'));
 	
-								var inNodes = inputs.reduce(function (acc, i) {
-									acc[i] = node(function (v, next) {
+								var toNodes = function toNodes(i) {
+									return [i, node(function (v, next) {
 										return next(v);
-									});
-									return acc;
-								}, {});
-	
-								var outNodes = outputs.reduce(function (acc, i) {
-									acc[i] = node(function (v, next) {
-										return next(v);
-									});
-									return acc;
-								}, {});
+									})];
+								};
+								var inNodes = (0, _utils.arrayToObject)(inputNames, toNodes);
+								var outNodes = (0, _utils.arrayToObject)(outputNames, toNodes);
 	
 								components.in = { inputs: inNodes, outputs: inNodes };
 								components.out = { inputs: outNodes, outputs: outNodes };
 	
-								connections.forEach(function (_ref2) {
-									var _ref3 = _slicedToArray(_ref2, 2),
-									    from = _ref3[0],
-									    to = _ref3[1];
+								connections.forEach(function (_ref) {
+									var _ref2 = _slicedToArray(_ref, 2),
+									    from = _ref2[0],
+									    to = _ref2[1];
 	
-									var streamOut = select(from, components, 'output');
-									var streamIn = select(to, components, 'input');
-	
-									streamOut.addListener(streamIn);
+									var outNode = selectNode(from, components, 'outputs');
+									var inNode = selectNode(to, components, 'inputs');
+									outNode.addListener(inNode);
 								});
 	
-								var comp = {
-									start: function start() {
-										var initialValues = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { default: {} };
+								var on = function on() {
+									for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+										args[_key] = arguments[_key];
+									}
 	
-										if ((typeof initialValues === 'undefined' ? 'undefined' : _typeof(initialValues)) !== 'object') {
-											initialValues = { default: initialValues };
-										}
-										for (var key in initialValues) {
-											comp.inputs[key].received(initialValues[key]);
-										}
-									},
-									inputs: inNodes,
-									outputs: outNodes,
-									in: inNodes,
-									out: outNodes
+									var _args$splice$reverse = args.splice(0, 2).reverse(),
+									    _args$splice$reverse2 = _slicedToArray(_args$splice$reverse, 2),
+									    handler = _args$splice$reverse2[0],
+									    _args$splice$reverse3 = _args$splice$reverse2[1],
+									    name = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
+	
+									outNodes[name].on(handler);
 								};
 	
-								return comp;
+								var send = function send() {
+									for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+										args[_key2] = arguments[_key2];
+									}
+	
+									var _args$splice$reverse4 = args.splice(0, 2).reverse(),
+									    _args$splice$reverse5 = _slicedToArray(_args$splice$reverse4, 2),
+									    _args$splice$reverse6 = _args$splice$reverse5[0],
+									    value = _args$splice$reverse6 === undefined ? {} : _args$splice$reverse6,
+									    _args$splice$reverse7 = _args$splice$reverse5[1],
+									    name = _args$splice$reverse7 === undefined ? 'default' : _args$splice$reverse7;
+	
+									inNodes[name].send(value);
+								};
+	
+								return { send: send, on: on, inputs: inNodes, outputs: outNodes };
 							};
 	
 							var Component = function Component(arg) {
-								if (typeof arg === 'function') {
-									return toComponent(arg);
-								} else {
-									return component2(arg);
-								}
+								if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg);
+								return componentFromObject(arg);
 							};
 	
 							exports.default = Component;
@@ -807,6 +861,150 @@ return /******/ (function(modules) { // webpackBootstrap
 							/***/
 						},
 						/* 2 */
+						/***/function (module, exports) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _extends = Object.assign || function (target) {
+								for (var i = 1; i < arguments.length; i++) {
+									var source = arguments[i];for (var key in source) {
+										if (Object.prototype.hasOwnProperty.call(source, key)) {
+											target[key] = source[key];
+										}
+									}
+								}return target;
+							};
+	
+							var _slicedToArray = function () {
+								function sliceIterator(arr, i) {
+									var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+										for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+											_arr.push(_s.value);if (i && _arr.length === i) break;
+										}
+									} catch (err) {
+										_d = true;_e = err;
+									} finally {
+										try {
+											if (!_n && _i["return"]) _i["return"]();
+										} finally {
+											if (_d) throw _e;
+										}
+									}return _arr;
+								}return function (arr, i) {
+									if (Array.isArray(arr)) {
+										return arr;
+									} else if (Symbol.iterator in Object(arr)) {
+										return sliceIterator(arr, i);
+									} else {
+										throw new TypeError("Invalid attempt to destructure non-iterable instance");
+									}
+								};
+							}();
+	
+							var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+								return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+							} : function (obj) {
+								return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+							};
+	
+							function _toConsumableArray(arr) {
+								if (Array.isArray(arr)) {
+									for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+										arr2[i] = arr[i];
+									}return arr2;
+								} else {
+									return Array.from(arr);
+								}
+							}
+	
+							function _defineProperty(obj, key, value) {
+								if (key in obj) {
+									Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+								} else {
+									obj[key] = value;
+								}return obj;
+							}
+	
+							var pipe = function pipe() {
+								for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
+									funcs[_key] = arguments[_key];
+								}
+	
+								return funcs.reduce(function (f, g) {
+									return function () {
+										return g(f.apply(undefined, arguments));
+									};
+								});
+							};
+	
+							var isFunction = function isFunction(arg) {
+								return typeof arg === 'function';
+							};
+							var isObject = function isObject(arg) {
+								return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object';
+							};
+							var isUndefined = function isUndefined(arg) {
+								return arg === undefined;
+							};
+	
+							var pairToObject = function pairToObject(_ref) {
+								var _ref2 = _slicedToArray(_ref, 2),
+								    key = _ref2[0],
+								    value = _ref2[1];
+	
+								return _defineProperty({}, key, value);
+							};
+	
+							var pairsToObject = function pairsToObject(arr) {
+								return arr.reduce(function (obj, pair) {
+									return _extends({}, obj, pairToObject(pair));
+								}, {});
+							};
+	
+							var arrayToObject = function arrayToObject(arr, func) {
+								return pairsToObject(arr.map(func));
+							};
+	
+							var applyAndEmpty = function applyAndEmpty(arr, func) {
+								var values = arr.length;
+								for (var i = 1; i <= values; i++) {
+									func(arr.shift());
+								}
+							};
+	
+							var flatten = function flatten(v) {
+								var _ref4;
+	
+								return (_ref4 = []).concat.apply(_ref4, _toConsumableArray(v));
+							};
+	
+							var unique = function unique(arg) {
+								return [].concat(_toConsumableArray(new Set(arg)));
+							};
+	
+							var toArray = function toArray(arg) {
+								return [].concat(arg);
+							};
+	
+							exports.pipe = pipe;
+							exports.isFunction = isFunction;
+							exports.isObject = isObject;
+							exports.isUndefined = isUndefined;
+							exports.arrayToObject = arrayToObject;
+							exports.pairToObject = pairToObject;
+							exports.pairsToObject = pairsToObject;
+							exports.applyAndEmpty = applyAndEmpty;
+							exports.flatten = flatten;
+							exports.unique = unique;
+							exports.toArray = toArray;
+	
+							/***/
+						},
+						/* 3 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -833,7 +1031,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 3 */
+						/* 4 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -860,7 +1058,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 4 */
+						/* 5 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -892,7 +1090,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 5 */
+						/* 6 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -963,7 +1161,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 6 */
+						/* 7 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -976,45 +1174,41 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							var _Component2 = _interopRequireDefault(_Component);
 	
-							var _Mapper = __webpack_require__(2);
+							var _Mapper = __webpack_require__(3);
 	
 							var _Mapper2 = _interopRequireDefault(_Mapper);
+	
+							var _SortedDemuxer = __webpack_require__(8);
+	
+							var _SortedDemuxer2 = _interopRequireDefault(_SortedDemuxer);
 	
 							function _interopRequireDefault(obj) {
 								return obj && obj.__esModule ? obj : { default: obj };
 							}
 	
-							function _defineProperty(obj, key, value) {
-								if (key in obj) {
-									Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
-								} else {
-									obj[key] = value;
-								}return obj;
-							}
+							var Memorizer = function Memorizer() {
+								var memory = void 0;
 	
-							var Hub = function Hub() {
-								for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
-									inputs[_key] = arguments[_key];
-								}
-	
-								var components = {};
-								var connections = [];
-	
-								inputs.forEach(function (i) {
-									components[i] = (0, _Mapper2.default)(function (v) {
-										return _defineProperty({}, i, v);
-									});
-									connections.push(['in.' + i, i], [i, 'out']);
+								return (0, _Component2.default)({
+									inputs: ['memory', 'value'],
+									components: {
+										memory: (0, _Component2.default)(function (v) {
+											memory = v;
+										}),
+										mapper: (0, _Mapper2.default)(function (value) {
+											return { value: value, memory: memory };
+										}),
+										demuxer: (0, _SortedDemuxer2.default)('memory', 'value')
+									},
+									connections: [['in.memory', 'memory'], ['in.value', 'mapper'], ['mapper', 'out'], ['in', 'demuxer'], ['demuxer.memory', 'memory'], ['demuxer.value', 'mapper']]
 								});
-	
-								return (0, _Component2.default)({ components: components, connections: connections, inputs: inputs });
 							};
 	
-							exports.default = Hub;
+							exports.default = Memorizer;
 	
 							/***/
 						},
-						/* 7 */
+						/* 8 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1023,43 +1217,45 @@ return /******/ (function(modules) { // webpackBootstrap
 								value: true
 							});
 	
-							var _Chain = __webpack_require__(8);
+							var _Chain = __webpack_require__(9);
 	
 							var _Chain2 = _interopRequireDefault(_Chain);
 	
-							var _Hub = __webpack_require__(6);
+							var _Mapper = __webpack_require__(3);
 	
-							var _Hub2 = _interopRequireDefault(_Hub);
+							var _Mapper2 = _interopRequireDefault(_Mapper);
 	
-							var _Accumulator = __webpack_require__(5);
+							var _Serializer = __webpack_require__(10);
 	
-							var _Accumulator2 = _interopRequireDefault(_Accumulator);
+							var _Serializer2 = _interopRequireDefault(_Serializer);
 	
-							var _Filter = __webpack_require__(3);
+							var _Demuxer = __webpack_require__(11);
 	
-							var _Filter2 = _interopRequireDefault(_Filter);
+							var _Demuxer2 = _interopRequireDefault(_Demuxer);
+	
+							var _utils = __webpack_require__(2);
 	
 							function _interopRequireDefault(obj) {
 								return obj && obj.__esModule ? obj : { default: obj };
 							}
 	
-							var Muxer = function Muxer() {
-								for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
-									inputs[_key] = arguments[_key];
+							var SortedDemuxer = function SortedDemuxer() {
+								for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
+									outputs[_key] = arguments[_key];
 								}
 	
-								return (0, _Chain2.default)(_Hub2.default.apply(undefined, inputs), (0, _Accumulator2.default)(), (0, _Filter2.default)(function (v) {
-									return inputs.every(function (i) {
-										return v[i] !== undefined;
+								return (0, _Chain2.default)((0, _Mapper2.default)(function (obj) {
+									return outputs.map(function (k) {
+										return [k, obj[k]];
 									});
-								}));
+								}), (0, _Serializer2.default)(), (0, _Mapper2.default)(_utils.pairToObject), _Demuxer2.default.apply(undefined, outputs));
 							};
 	
-							exports.default = Muxer;
+							exports.default = SortedDemuxer;
 	
 							/***/
 						},
-						/* 8 */
+						/* 9 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1136,96 +1332,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 9 */
-						/***/function (module, exports, __webpack_require__) {
-	
-							'use strict';
-	
-							Object.defineProperty(exports, "__esModule", {
-								value: true
-							});
-	
-							var _Component = __webpack_require__(1);
-	
-							var _Component2 = _interopRequireDefault(_Component);
-	
-							function _interopRequireDefault(obj) {
-								return obj && obj.__esModule ? obj : { default: obj };
-							}
-	
-							var flatMap = function flatMap(v) {
-								return [].concat.apply([], v);
-							};
-	
-							var Demuxer = function Demuxer() {
-								for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
-									outputs[_key] = arguments[_key];
-								}
-	
-								return (0, _Component2.default)({
-									components: outputs.reduce(function (acc, output) {
-										acc[output] = (0, _Component2.default)(function (v, next) {
-											if (v[output] !== undefined) next(v[output]);
-										});
-										return acc;
-									}, {}),
-									outputs: outputs,
-									connections: flatMap(outputs.map(function (out) {
-										return [['in.default', out], [out, 'out.' + out]];
-									}))
-								});
-							};
-	
-							exports.default = Demuxer;
-	
-							/***/
-						},
 						/* 10 */
-						/***/function (module, exports, __webpack_require__) {
-	
-							'use strict';
-	
-							Object.defineProperty(exports, "__esModule", {
-								value: true
-							});
-	
-							var _Component = __webpack_require__(1);
-	
-							var _Component2 = _interopRequireDefault(_Component);
-	
-							function _interopRequireDefault(obj) {
-								return obj && obj.__esModule ? obj : { default: obj };
-							}
-	
-							var Iterator = function Iterator(iterable) {
-								var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-								    _ref$cyclic = _ref.cyclic,
-								    cyclic = _ref$cyclic === undefined ? false : _ref$cyclic;
-	
-								var iterator = iterable[Symbol.iterator]();
-	
-								return (0, _Component2.default)(function (v, next) {
-									var _iterator$next = iterator.next(),
-									    value = _iterator$next.value,
-									    done = _iterator$next.done;
-	
-									if (done && cyclic) {
-										iterator = iterable[Symbol.iterator]();
-										var _iterator$next2 = iterator.next();
-	
-										value = _iterator$next2.value;
-										done = _iterator$next2.done;
-									}
-	
-									if (!done) next(value);
-								});
-							};
-	
-							exports.default = Iterator;
-	
-							/***/
-						},
-						/* 11 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1276,7 +1383,225 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
+						/* 11 */
+						/***/function (module, exports, __webpack_require__) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _Component = __webpack_require__(1);
+	
+							var _Component2 = _interopRequireDefault(_Component);
+	
+							var _utils = __webpack_require__(2);
+	
+							function _interopRequireDefault(obj) {
+								return obj && obj.__esModule ? obj : { default: obj };
+							}
+	
+							var Demuxer = function Demuxer() {
+								for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
+									outputs[_key] = arguments[_key];
+								}
+	
+								return (0, _Component2.default)({
+									components: outputs.reduce(function (acc, output) {
+										acc[output] = (0, _Component2.default)(function (v, next) {
+											if (v[output] !== undefined) next(v[output]);
+										});
+										return acc;
+									}, {}),
+									outputs: outputs,
+									connections: (0, _utils.flatten)(outputs.map(function (out) {
+										return [['in', out], [out, 'out.' + out]];
+									})).concat([['in', 'out']])
+								});
+							};
+	
+							exports.default = Demuxer;
+	
+							/***/
+						},
 						/* 12 */
+						/***/function (module, exports, __webpack_require__) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _Component = __webpack_require__(1);
+	
+							var _Component2 = _interopRequireDefault(_Component);
+	
+							var _Mapper = __webpack_require__(3);
+	
+							var _Mapper2 = _interopRequireDefault(_Mapper);
+	
+							function _interopRequireDefault(obj) {
+								return obj && obj.__esModule ? obj : { default: obj };
+							}
+	
+							function _defineProperty(obj, key, value) {
+								if (key in obj) {
+									Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+								} else {
+									obj[key] = value;
+								}return obj;
+							}
+	
+							var Hub = function Hub() {
+								for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
+									inputs[_key] = arguments[_key];
+								}
+	
+								var components = {};
+								var connections = [];
+	
+								inputs.forEach(function (i) {
+									components[i] = (0, _Mapper2.default)(function (v) {
+										return _defineProperty({}, i, v);
+									});
+									connections.push(['in.' + i, i], [i, 'out'], ['in', 'out']);
+								});
+	
+								return (0, _Component2.default)({ components: components, connections: connections, inputs: inputs });
+							};
+	
+							exports.default = Hub;
+	
+							/***/
+						},
+						/* 13 */
+						/***/function (module, exports, __webpack_require__) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _Chain = __webpack_require__(9);
+	
+							var _Chain2 = _interopRequireDefault(_Chain);
+	
+							var _Hub = __webpack_require__(12);
+	
+							var _Hub2 = _interopRequireDefault(_Hub);
+	
+							var _Accumulator = __webpack_require__(6);
+	
+							var _Accumulator2 = _interopRequireDefault(_Accumulator);
+	
+							var _Filter = __webpack_require__(4);
+	
+							var _Filter2 = _interopRequireDefault(_Filter);
+	
+							function _interopRequireDefault(obj) {
+								return obj && obj.__esModule ? obj : { default: obj };
+							}
+	
+							var Muxer = function Muxer() {
+								for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
+									inputs[_key] = arguments[_key];
+								}
+	
+								return (0, _Chain2.default)(_Hub2.default.apply(undefined, inputs), (0, _Accumulator2.default)(), (0, _Filter2.default)(function (v) {
+									return inputs.every(function (i) {
+										return v[i] !== undefined;
+									});
+								}));
+							};
+	
+							exports.default = Muxer;
+	
+							/***/
+						},
+						/* 14 */
+						/***/function (module, exports, __webpack_require__) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _Component = __webpack_require__(1);
+	
+							var _Component2 = _interopRequireDefault(_Component);
+	
+							function _interopRequireDefault(obj) {
+								return obj && obj.__esModule ? obj : { default: obj };
+							}
+	
+							var Iterator = function Iterator(iterable) {
+								var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+								    _ref$cyclic = _ref.cyclic,
+								    cyclic = _ref$cyclic === undefined ? false : _ref$cyclic;
+	
+								var iterator = iterable[Symbol.iterator]();
+	
+								return (0, _Component2.default)(function (v, next) {
+									var _iterator$next = iterator.next(),
+									    value = _iterator$next.value,
+									    done = _iterator$next.done;
+	
+									if (done && cyclic) {
+										iterator = iterable[Symbol.iterator]();
+										var _iterator$next2 = iterator.next();
+	
+										value = _iterator$next2.value;
+										done = _iterator$next2.done;
+									}
+	
+									if (!done) next(value);
+								});
+							};
+	
+							exports.default = Iterator;
+	
+							/***/
+						},
+						/* 15 */
+						/***/function (module, exports, __webpack_require__) {
+	
+							'use strict';
+	
+							Object.defineProperty(exports, "__esModule", {
+								value: true
+							});
+	
+							var _Chain = __webpack_require__(9);
+	
+							var _Chain2 = _interopRequireDefault(_Chain);
+	
+							var _Mapper = __webpack_require__(3);
+	
+							var _Mapper2 = _interopRequireDefault(_Mapper);
+	
+							var _Serializer = __webpack_require__(10);
+	
+							var _Serializer2 = _interopRequireDefault(_Serializer);
+	
+							var _utils = __webpack_require__(2);
+	
+							function _interopRequireDefault(obj) {
+								return obj && obj.__esModule ? obj : { default: obj };
+							}
+	
+							var ArraySerializer = function ArraySerializer() {
+								return (0, _Chain2.default)((0, _Mapper2.default)(_utils.toArray), (0, _Serializer2.default)());
+							};
+	
+							exports.default = ArraySerializer;
+	
+							/***/
+						},
+						/* 16 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1305,7 +1630,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 13 */
+						/* 17 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1337,7 +1662,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 14 */
+						/* 18 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1374,7 +1699,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 15 */
+						/* 19 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1383,15 +1708,15 @@ return /******/ (function(modules) { // webpackBootstrap
 								value: true
 							});
 	
-							var _Chain = __webpack_require__(8);
+							var _Chain = __webpack_require__(9);
 	
 							var _Chain2 = _interopRequireDefault(_Chain);
 	
-							var _Mapper = __webpack_require__(2);
+							var _Mapper = __webpack_require__(3);
 	
 							var _Mapper2 = _interopRequireDefault(_Mapper);
 	
-							var _Demuxer = __webpack_require__(9);
+							var _Demuxer = __webpack_require__(11);
 	
 							var _Demuxer2 = _interopRequireDefault(_Demuxer);
 	
@@ -1409,7 +1734,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 16 */
+						/* 20 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1448,11 +1773,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							var _Component2 = _interopRequireDefault(_Component);
 	
-							var _Chain = __webpack_require__(8);
+							var _Chain = __webpack_require__(9);
 	
 							var _Chain2 = _interopRequireDefault(_Chain);
 	
-							var _Demuxer = __webpack_require__(9);
+							var _Demuxer = __webpack_require__(11);
 	
 							var _Demuxer2 = _interopRequireDefault(_Demuxer);
 	
@@ -1506,7 +1831,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 17 */
+						/* 21 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1515,7 +1840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								value: true
 							});
 	
-							var _Mapper = __webpack_require__(2);
+							var _Mapper = __webpack_require__(3);
 	
 							var _Mapper2 = _interopRequireDefault(_Mapper);
 	
@@ -1533,7 +1858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 18 */
+						/* 22 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1562,7 +1887,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							/***/
 						},
-						/* 19 */
+						/* 23 */
 						/***/function (module, exports, __webpack_require__) {
 	
 							'use strict';
@@ -1609,27 +1934,261 @@ return /******/ (function(modules) { // webpackBootstrap
 			/* 4 */
 			/***/function (module, exports) {
 	
-				"use strict";
+				'use strict';
 	
 				Object.defineProperty(exports, "__esModule", {
 					value: true
 				});
-				var flatMap = function flatMap(v) {
-					return [].concat.apply([], v);
+	
+				var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+					return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+				} : function (obj) {
+					return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
 				};
 	
-				exports.flatMap = flatMap;
+				var _slicedToArray = function () {
+					function sliceIterator(arr, i) {
+						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+								_arr.push(_s.value);if (i && _arr.length === i) break;
+							}
+						} catch (err) {
+							_d = true;_e = err;
+						} finally {
+							try {
+								if (!_n && _i["return"]) _i["return"]();
+							} finally {
+								if (_d) throw _e;
+							}
+						}return _arr;
+					}return function (arr, i) {
+						if (Array.isArray(arr)) {
+							return arr;
+						} else if (Symbol.iterator in Object(arr)) {
+							return sliceIterator(arr, i);
+						} else {
+							throw new TypeError("Invalid attempt to destructure non-iterable instance");
+						}
+					};
+				}();
+	
+				function _toConsumableArray(arr) {
+					if (Array.isArray(arr)) {
+						for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+							arr2[i] = arr[i];
+						}return arr2;
+					} else {
+						return Array.from(arr);
+					}
+				}
+	
+				var flatten = function flatten(v) {
+					var _ref;
+	
+					return (_ref = []).concat.apply(_ref, _toConsumableArray(v));
+				};
+	
+				var mapObject = function mapObject(obj, map) {
+					return Object.entries(obj).reduce(function (acc, _ref2) {
+						var _ref3 = _slicedToArray(_ref2, 2),
+						    key = _ref3[0],
+						    value = _ref3[1];
+	
+						var v = map(key, value);
+						if (isDefined(v)) {
+							var _v = _slicedToArray(v, 2),
+							    newKey = _v[0],
+							    newValue = _v[1];
+	
+							acc[newKey] = newValue;
+						}
+						return acc;
+					}, {});
+				};
+	
+				var toArray = function toArray(arg) {
+					return [].concat(arg);
+				};
+	
+				var isArray = Array.isArray;
+	
+				var isFunction = function isFunction(arg) {
+					return typeof arg === 'function';
+				};
+	
+				var isString = function isString(arg) {
+					return typeof arg === 'string';
+				};
+	
+				var isObject = function isObject(arg) {
+					return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object';
+				};
+	
+				var isUndefined = function isUndefined(arg) {
+					return arg === undefined;
+				};
+	
+				var isDefined = function isDefined(arg) {
+					return arg !== undefined;
+				};
+	
+				var unique = function unique(arg) {
+					return [].concat(_toConsumableArray(new Set(arg)));
+				};
+	
+				exports.flatten = flatten;
+				exports.mapObject = mapObject;
+				exports.unique = unique;
+				exports.toArray = toArray;
+				exports.isArray = isArray;
+				exports.isFunction = isFunction;
+				exports.isString = isString;
+				exports.isObject = isObject;
+				exports.isUndefined = isUndefined;
+				exports.isDefined = isDefined;
 	
 				/***/
 			},
 			/* 5 */
 			/***/function (module, exports, __webpack_require__) {
 	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+				exports.getHandler = exports.toMessage = exports.isMessage = exports.Message = exports.default = undefined;
+	
+				var _slicedToArray = function () {
+					function sliceIterator(arr, i) {
+						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+								_arr.push(_s.value);if (i && _arr.length === i) break;
+							}
+						} catch (err) {
+							_d = true;_e = err;
+						} finally {
+							try {
+								if (!_n && _i["return"]) _i["return"]();
+							} finally {
+								if (_d) throw _e;
+							}
+						}return _arr;
+					}return function (arr, i) {
+						if (Array.isArray(arr)) {
+							return arr;
+						} else if (Symbol.iterator in Object(arr)) {
+							return sliceIterator(arr, i);
+						} else {
+							throw new TypeError("Invalid attempt to destructure non-iterable instance");
+						}
+					};
+				}();
+	
+				var _utils = __webpack_require__(4);
+	
+				function _defineProperty(obj, key, value) {
+					if (key in obj) {
+						Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+					} else {
+						obj[key] = value;
+					}return obj;
+				}
+	
+				var messageSymbol = Symbol('Message');
+	
+				var nameToblockSignal = function nameToblockSignal(name) {
+					var _name$split = name.split('.', 2),
+					    _name$split2 = _slicedToArray(_name$split, 2),
+					    block = _name$split2[0],
+					    _name$split2$ = _name$split2[1],
+					    signal = _name$split2$ === undefined ? 'default' : _name$split2$;
+	
+					return [block, signal];
+				};
+	
+				var Message = function Message() {
+					for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+						args[_key] = arguments[_key];
+					}
+	
+					if ((0, _utils.isObject)(args[0])) return createMessage(args[0]);
+	
+					var block = void 0,
+					    signal = void 0,
+					    value = {};
+	
+					if (args.length === 1) {
+						var _nameToblockSignal = nameToblockSignal(args[0]);
+	
+						var _nameToblockSignal2 = _slicedToArray(_nameToblockSignal, 2);
+	
+						block = _nameToblockSignal2[0];
+						signal = _nameToblockSignal2[1];
+					} else if (args.length === 2) {
+						var _nameToblockSignal3 = nameToblockSignal(args[0]);
+	
+						var _nameToblockSignal4 = _slicedToArray(_nameToblockSignal3, 2);
+	
+						block = _nameToblockSignal4[0];
+						signal = _nameToblockSignal4[1];
+	
+						value = args[1];
+					} else if (args.length === 3) {
+						block = args[0];
+						signal = args[1];
+						value = args[2];
+					}
+	
+					return createMessage({ blocks: block, values: _defineProperty({}, signal, value) });
+				};
+	
+				var createMessage = function createMessage(_ref) {
+					var blocks = _ref.blocks,
+					    _ref$values = _ref.values,
+					    values = _ref$values === undefined ? { default: {} } : _ref$values;
+					return _defineProperty({
+						blocks: (0, _utils.isDefined)(blocks) ? (0, _utils.toArray)(blocks) : undefined,
+						values: (0, _utils.isObject)(values) ? values : { default: values }
+					}, messageSymbol, true);
+				};
+	
+				var isMessage = function isMessage(arg) {
+					return arg[messageSymbol];
+				};
+	
+				var toMessage = function toMessage(arg, converter) {
+					if (isMessage(arg)) return arg;
+					if ((0, _utils.isArray)(arg)) return arg.map(toMessage);
+	
+					return [].concat(converter(arg));
+				};
+	
+				var getHandler = function getHandler(handlers, block, signal) {
+					// const {blocks, values} = message
+					// const block = blocks[0]
+					// const signal = Object.entries(values)[0][0]
+					var name = block + '.' + signal;
+					if (handlers[name]) return handlers[name];
+					if (signal === 'default' && handlers[block]) return handlers[block];
+				};
+	
+				exports.default = Message;
+				exports.Message = Message;
+				exports.isMessage = isMessage;
+				exports.toMessage = toMessage;
+				exports.getHandler = getHandler;
+	
+				/***/
+			},
+			/* 6 */
+			/***/function (module, exports, __webpack_require__) {
+	
 				"use strict";
 	
-				var vnode_1 = __webpack_require__(6);
-				var is = __webpack_require__(7);
-				var htmldomapi_1 = __webpack_require__(8);
+				var vnode_1 = __webpack_require__(7);
+				var is = __webpack_require__(8);
+				var htmldomapi_1 = __webpack_require__(9);
 				function isUndef(s) {
 					return s === undefined;
 				}
@@ -1658,9 +2217,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					return map;
 				}
 				var hooks = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
-				var h_1 = __webpack_require__(9);
+				var h_1 = __webpack_require__(10);
 				exports.h = h_1.h;
-				var thunk_1 = __webpack_require__(10);
+				var thunk_1 = __webpack_require__(11);
 				exports.thunk = thunk_1.thunk;
 				function init(modules, domApi) {
 					var i,
@@ -1920,7 +2479,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 6 */
+			/* 7 */
 			/***/function (module, exports) {
 	
 				"use strict";
@@ -1937,7 +2496,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 7 */
+			/* 8 */
 			/***/function (module, exports) {
 	
 				"use strict";
@@ -1951,7 +2510,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 8 */
+			/* 9 */
 			/***/function (module, exports) {
 	
 				"use strict";
@@ -2024,13 +2583,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 9 */
+			/* 10 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				"use strict";
 	
-				var vnode_1 = __webpack_require__(6);
-				var is = __webpack_require__(7);
+				var vnode_1 = __webpack_require__(7);
+				var is = __webpack_require__(8);
 				function addNS(data, children, sel) {
 					data.ns = 'http://www.w3.org/2000/svg';
 					if (sel !== 'foreignObject' && children !== undefined) {
@@ -2085,12 +2644,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 10 */
+			/* 11 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				"use strict";
 	
-				var h_1 = __webpack_require__(9);
+				var h_1 = __webpack_require__(10);
 				function copyToThunk(vnode, thunk) {
 					thunk.elm = vnode.elm;
 					vnode.data.fn = thunk.data.fn;
@@ -2141,7 +2700,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 11 */
+			/* 12 */
 			/***/function (module, exports) {
 	
 				"use strict";
@@ -2244,7 +2803,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 12 */
+			/* 13 */
 			/***/function (module, exports) {
 	
 				"use strict";
@@ -2280,102 +2839,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 13 */
-			/***/function (module, exports, __webpack_require__) {
-	
-				'use strict';
-	
-				Object.defineProperty(exports, "__esModule", {
-					value: true
-				});
-	
-				var _slicedToArray = function () {
-					function sliceIterator(arr, i) {
-						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
-							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-								_arr.push(_s.value);if (i && _arr.length === i) break;
-							}
-						} catch (err) {
-							_d = true;_e = err;
-						} finally {
-							try {
-								if (!_n && _i["return"]) _i["return"]();
-							} finally {
-								if (_d) throw _e;
-							}
-						}return _arr;
-					}return function (arr, i) {
-						if (Array.isArray(arr)) {
-							return arr;
-						} else if (Symbol.iterator in Object(arr)) {
-							return sliceIterator(arr, i);
-						} else {
-							throw new TypeError("Invalid attempt to destructure non-iterable instance");
-						}
-					};
-				}();
-	
-				var _graflow = __webpack_require__(3);
-	
-				function _defineProperty(obj, key, value) {
-					if (key in obj) {
-						Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
-					} else {
-						obj[key] = value;
-					}return obj;
-				}
-	
-				var toCanonicalItem = function toCanonicalItem(msg) {
-					var m = typeof msg === 'string' ? [msg] : msg;
-	
-					var _m = _slicedToArray(m, 2),
-					    name = _m[0],
-					    _m$ = _m[1],
-					    payload = _m$ === undefined ? {} : _m$;
-	
-					var _name$split = name.split('.', 2),
-					    _name$split2 = _slicedToArray(_name$split, 2),
-					    componentName = _name$split2[0],
-					    _name$split2$ = _name$split2[1],
-					    signal = _name$split2$ === undefined ? 'default' : _name$split2$;
-	
-					if (componentName === 'out') {
-						return { outputs: _defineProperty({}, signal, payload) };
-					} else {
-						return { components: _defineProperty({}, componentName, _defineProperty({}, signal, payload)) };
-					}
-				};
-	
-				var toCanonicalMessage = function toCanonicalMessage(msg) {
-					return [].concat(msg).map(toCanonicalItem);
-				};
-	
-				var State = function State() {
-					var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-	
-					var post = options.post;
-					var state = options.initial || {};
-	
-					return (0, _graflow.Component)({
-						inputs: ['transformation'],
-						outputs: ['state', 'outputs', 'components'],
-						components: {
-							transform: (0, _graflow.Component)(function (v, next) {
-								state = v(state);
-								next(state);
-							}),
-							post: (0, _graflow.Chain)((0, _graflow.Component)(function (state, next) {
-								if (post) next(toCanonicalMessage(post(state)));
-							}), (0, _graflow.Serializer)(), (0, _graflow.Demuxer)('outputs', 'components'))
-						},
-						connections: [['in.transformation', 'transform'], ['transform', 'post'], ['transform', 'out.state'], ['post.outputs', 'out.outputs'], ['post.components', 'out.components']]
-					});
-				};
-	
-				exports.default = State;
-	
-				/***/
-			},
 			/* 14 */
 			/***/function (module, exports, __webpack_require__) {
 	
@@ -2385,6 +2848,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					value: true
 				});
 	
+				var _extends = Object.assign || function (target) {
+					for (var i = 1; i < arguments.length; i++) {
+						var source = arguments[i];for (var key in source) {
+							if (Object.prototype.hasOwnProperty.call(source, key)) {
+								target[key] = source[key];
+							}
+						}
+					}return target;
+				};
+	
 				var _slicedToArray = function () {
 					function sliceIterator(arr, i) {
 						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
@@ -2413,63 +2886,54 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _graflow = __webpack_require__(3);
 	
-				function _defineProperty(obj, key, value) {
-					if (key in obj) {
-						Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
-					} else {
-						obj[key] = value;
-					}return obj;
-				}
+				var _Message = __webpack_require__(5);
 	
-				var toCanonicalItem = function toCanonicalItem(msg) {
-					var m = msg;
-					if (typeof msg === 'function') {
-						m = ['state', msg];
-					} else if (typeof msg === 'string') {
-						m = [msg];
-					}
+				var _utils = __webpack_require__(4);
 	
-					var _m = m,
-					    _m2 = _slicedToArray(_m, 2),
-					    name = _m2[0],
-					    _m2$ = _m2[1],
-					    payload = _m2$ === undefined ? {} : _m2$;
+				var messageConverter = function messageConverter(arg) {
+					if ((0, _utils.isString)(arg)) return (0, _Message.Message)(arg);
+					if ((0, _utils.isObject)(arg)) {
+						return Object.entries(arg).map(function (_ref) {
+							var _ref2 = _slicedToArray(_ref, 2),
+							    name = _ref2[0],
+							    value = _ref2[1];
 	
-					var _name$split = name.split('.', 2),
-					    _name$split2 = _slicedToArray(_name$split, 2),
-					    componentName = _name$split2[0],
-					    _name$split2$ = _name$split2[1],
-					    signal = _name$split2$ === undefined ? 'default' : _name$split2$;
-	
-					if (componentName === 'state') {
-						return { state: payload };
-					} else if (componentName === 'out') {
-						return { outputs: _defineProperty({}, signal, payload) };
-					} else {
-						return { components: _defineProperty({}, componentName, _defineProperty({}, signal, payload)) };
+							return (0, _Message.Message)(name, value);
+						});
 					}
 				};
 	
-				var toCanonicalMessage = function toCanonicalMessage(msg) {
-					return [].concat(msg).map(toCanonicalItem);
+				var StateComponent = function StateComponent(initial) {
+					var state = initial;
+	
+					return (0, _graflow.Mapper)(function (transformate) {
+						state = transformate(state);
+						return state;
+					});
 				};
 	
-				var Events = function Events(events) {
-					return (0, _graflow.Chain)((0, _graflow.Component)(function (_ref, next) {
-						var _ref2 = _slicedToArray(_ref, 2),
-						    _ref2$ = _slicedToArray(_ref2[0], 2),
-						    e = _ref2$[0],
-						    payload = _ref2$[1],
-						    state = _ref2[1];
-	
-						if (events[e]) {
-							var v = events[e](payload, state || {});
-							if (v !== undefined) next(toCanonicalMessage(v));
-						}
-					}), (0, _graflow.Serializer)(), (0, _graflow.Demuxer)('state', 'components', 'outputs'));
+				var Outputs = function Outputs(handler) {
+					return (0, _graflow.Mapper)(function (state) {
+						return (0, _Message.toMessage)(_extends({
+							'events.state': state,
+							'view.state': state
+						}, handler(state)), messageConverter);
+					});
 				};
 	
-				exports.default = Events;
+				var State = function State() {
+					var handler = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
+						return {};
+					};
+					var initial = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
+						return (0, _Message.isMessage)(v) && v.blocks.includes('state');
+					}), (0, _graflow.Mapper)(function (m) {
+						return m.values.default;
+					}), StateComponent(initial), Outputs(handler));
+				};
+	
+				exports.default = State;
 	
 				/***/
 			},
@@ -2482,52 +2946,102 @@ return /******/ (function(modules) { // webpackBootstrap
 					value: true
 				});
 	
-				var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
-					return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
-				} : function (obj) {
-					return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
-				};
+				var _slicedToArray = function () {
+					function sliceIterator(arr, i) {
+						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+								_arr.push(_s.value);if (i && _arr.length === i) break;
+							}
+						} catch (err) {
+							_d = true;_e = err;
+						} finally {
+							try {
+								if (!_n && _i["return"]) _i["return"]();
+							} finally {
+								if (_d) throw _e;
+							}
+						}return _arr;
+					}return function (arr, i) {
+						if (Array.isArray(arr)) {
+							return arr;
+						} else if (Symbol.iterator in Object(arr)) {
+							return sliceIterator(arr, i);
+						} else {
+							throw new TypeError("Invalid attempt to destructure non-iterable instance");
+						}
+					};
+				}();
+	
+				var _Message = __webpack_require__(5);
+	
+				var _utils = __webpack_require__(4);
 	
 				var _graflow = __webpack_require__(3);
 	
-				var setComponent = function setComponent(vdom, component) {
-					if (Array.isArray(vdom)) {
-						vdom.map(function (e) {
-							return setComponent(e, component);
-						});
-					} else {
-						if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object' && !vdom.component) vdom.component = component;
-						if (vdom.content) setComponent(vdom.content, component);
-					}
-					return vdom;
-				};
-	
-				var View = function View(view, component) {
+				var EventState = function EventState() {
 					return (0, _graflow.Component)({
-						inputs: ['vdom', 'state'],
+						inputs: ['state', 'event'],
 						components: {
-							vdomAccumulator: (0, _graflow.Accumulator)(),
-							hub: (0, _graflow.Hub)('vdom', 'state'),
-							globalAccumulator: (0, _graflow.Accumulator)(),
-							view: (0, _graflow.Mapper)(function (_ref) {
-								var _ref$state = _ref.state,
-								    state = _ref$state === undefined ? {} : _ref$state,
-								    _ref$vdom = _ref.vdom,
-								    vdom = _ref$vdom === undefined ? {} : _ref$vdom;
-								return view(state, vdom);
-							}),
-							filter: (0, _graflow.Filter)(function (v) {
-								return v !== undefined;
-							}),
-							post: (0, _graflow.Mapper)(function (vdom) {
-								return setComponent(vdom, component);
-							})
+							memory: (0, _graflow.Memorizer)(),
+							serializer: (0, _graflow.ArraySerializer)(),
+							demuxer: (0, _graflow.SortedDemuxer)('state', 'event')
 						},
-						connections: [['in.vdom', 'vdomAccumulator'], ['vdomAccumulator', 'hub.vdom'], ['in.state', 'hub.state'], ['hub', 'globalAccumulator'], ['globalAccumulator', 'view'], ['view', 'filter'], ['filter', 'post'], ['post', 'out']]
+						connections: [['in', 'demuxer'], ['demuxer.state', 'memory.memory'], ['demuxer.event', 'serializer'], ['in.event', 'serializer'], ['serializer', 'memory.value'], ['in.state', 'memory.memory'], ['memory', 'out']]
 					});
 				};
 	
-				exports.default = View;
+				var messageConverter = function messageConverter(arg) {
+					if ((0, _utils.isString)(arg)) return (0, _Message.Message)(arg);
+					if ((0, _utils.isFunction)(arg)) return (0, _Message.Message)('state', arg);
+					if ((0, _utils.isObject)(arg)) {
+						return Object.entries(arg).map(function (_ref) {
+							var _ref2 = _slicedToArray(_ref, 2),
+							    name = _ref2[0],
+							    value = _ref2[1];
+	
+							return (0, _Message.Message)(name, value);
+						});
+					}
+					return (0, _Message.Message)('state', function () {
+						return arg;
+					});
+				};
+	
+				var EventHandler = function EventHandler(handlers) {
+					return (0, _graflow.Chain)((0, _graflow.Mapper)(function (_ref3) {
+						var _ref3$value = _slicedToArray(_ref3.value, 3),
+						    comp = _ref3$value[0],
+						    port = _ref3$value[1],
+						    value = _ref3$value[2],
+						    memory = _ref3.memory;
+	
+						return [(0, _Message.getHandler)(handlers, comp, port), value, memory];
+					}), (0, _graflow.Filter)(function (_ref4) {
+						var _ref5 = _slicedToArray(_ref4, 1),
+						    handler = _ref5[0];
+	
+						return (0, _utils.isDefined)(handler);
+					}), (0, _graflow.Mapper)(function (_ref6) {
+						var _ref7 = _slicedToArray(_ref6, 3),
+						    handler = _ref7[0],
+						    value = _ref7[1],
+						    state = _ref7[2];
+	
+						return handler(value, state);
+					}), (0, _graflow.Filter)(_utils.isDefined), (0, _graflow.ArraySerializer)());
+				};
+	
+				var Events = function Events(handlers) {
+					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
+						return (0, _Message.isMessage)(v) && v.blocks.includes('events');
+					}), (0, _graflow.Mapper)(function (m) {
+						return m.values;
+					}), EventState(), EventHandler(handlers), (0, _graflow.Mapper)(function (v) {
+						return (0, _Message.toMessage)(v, messageConverter);
+					}));
+				};
+	
+				exports.default = Events;
 	
 				/***/
 			},
@@ -2550,150 +3064,69 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				};
 	
-				var _slicedToArray = function () {
-					function sliceIterator(arr, i) {
-						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
-							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-								_arr.push(_s.value);if (i && _arr.length === i) break;
-							}
-						} catch (err) {
-							_d = true;_e = err;
-						} finally {
-							try {
-								if (!_n && _i["return"]) _i["return"]();
-							} finally {
-								if (_d) throw _e;
-							}
-						}return _arr;
-					}return function (arr, i) {
-						if (Array.isArray(arr)) {
-							return arr;
-						} else if (Symbol.iterator in Object(arr)) {
-							return sliceIterator(arr, i);
-						} else {
-							throw new TypeError("Invalid attempt to destructure non-iterable instance");
-						}
-					};
-				}();
+				var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+					return typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+				} : function (obj) {
+					return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === 'undefined' ? 'undefined' : _typeof2(obj);
+				};
 	
-				var _State = __webpack_require__(13);
-	
-				var _State2 = _interopRequireDefault(_State);
-	
-				var _Events = __webpack_require__(14);
-	
-				var _Events2 = _interopRequireDefault(_Events);
-	
-				var _View = __webpack_require__(15);
-	
-				var _View2 = _interopRequireDefault(_View);
-	
-				var _BlockComponents = __webpack_require__(17);
-	
-				var _BlockComponents2 = _interopRequireDefault(_BlockComponents);
+				var _Message = __webpack_require__(5);
 	
 				var _graflow = __webpack_require__(3);
 	
 				var _utils = __webpack_require__(4);
 	
-				function _interopRequireDefault(obj) {
-					return obj && obj.__esModule ? obj : { default: obj };
-				}
-	
-				function _toConsumableArray(arr) {
-					if (Array.isArray(arr)) {
-						for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-							arr2[i] = arr[i];
-						}return arr2;
+				var setComponent = function setComponent(vdom, component) {
+					if (Array.isArray(vdom)) {
+						vdom.filter(_utils.isDefined).map(function (e) {
+							return setComponent(e, component);
+						});
 					} else {
-						return Array.from(arr);
+						if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object' && !vdom.component) vdom.component = component;
+						if (vdom.content) setComponent(vdom.content, component);
 					}
-				}
+					return vdom;
+				};
 	
-				function _objectWithoutProperties(obj, keys) {
-					var target = {};for (var i in obj) {
-						if (keys.indexOf(i) >= 0) continue;if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;target[i] = obj[i];
-					}return target;
-				}
+				var setRoot = function setRoot(vdom) {
+					return _extends({}, vdom, { root: true });
+				};
 	
-				var Memory = function Memory() {
-					var memory = void 0;
+				var ViewComponent = function ViewComponent(view, component) {
 					return (0, _graflow.Component)({
-						inputs: ['set', 'get'],
+						inputs: ['vdom', 'state'],
 						components: {
-							set: (0, _graflow.Component)(function (v) {
-								return memory = v;
+							demuxer: (0, _graflow.SortedDemuxer)('vdom', 'state'),
+							vdomAccumulator: (0, _graflow.Accumulator)(),
+							hub: (0, _graflow.Hub)('vdom', 'state'),
+							globalAccumulator: (0, _graflow.Accumulator)(),
+							view: (0, _graflow.Mapper)(function (_ref) {
+								var _ref$state = _ref.state,
+								    state = _ref$state === undefined ? {} : _ref$state,
+								    _ref$vdom = _ref.vdom,
+								    vdom = _ref$vdom === undefined ? {} : _ref$vdom;
+								return view(state, vdom);
 							}),
-							get: (0, _graflow.Mapper)(function (v) {
-								return [v, memory];
+							filter: (0, _graflow.Filter)(_utils.isDefined),
+							post: (0, _graflow.Mapper)(function (vdom) {
+								return setRoot(setComponent(vdom, component));
 							})
 						},
-						connections: [['in.set', 'set'], ['in.get', 'get'], ['get', 'out']]
+						connections: [['in', 'demuxer'], ['demuxer.vdom', 'vdomAccumulator'], ['demuxer.state', 'hub.state'], ['in.vdom', 'vdomAccumulator'], ['vdomAccumulator', 'hub.vdom'], ['in.state', 'hub.state'], ['hub', 'globalAccumulator'], ['globalAccumulator', 'view'], ['view', 'filter'], ['filter', 'post'], ['post', 'out']]
 					});
 				};
 	
-				var toObject = function toObject(kvs) {
-					return kvs.reduce(function (obj, _ref) {
-						var _ref2 = _slicedToArray(_ref, 2),
-						    k = _ref2[0],
-						    v = _ref2[1];
-	
-						obj[k] = v;
-						return obj;
-					}, {});
-				};
-	
-				var Block = function Block(options) {
-					var eventInputs = options.inputs || [];
-					var inputs = eventInputs.concat('init');
-	
-					var eventOutputs = options.outputs || [];
-					var outputs = eventOutputs.concat('vdom');
-	
-					var _ref3 = options.on || {},
-					    postState = _ref3.state,
-					    handlers = _objectWithoutProperties(_ref3, ['state']);
-	
-					var event = (0, _graflow.Mapper)(function (msg) {
-						return [].concat(msg);
-					});
-	
-					var eventState = (0, _graflow.Component)({
-						inputs: ['state', 'event'],
-						components: { state: Memory() },
-						connections: [['in.state', 'state.set'], ['in.event', 'state.get'], ['state', 'out']]
-					});
-	
-					var state = (0, _State2.default)({ post: postState });
-					var events = (0, _Events2.default)(handlers);
-					var view = (0, _View2.default)(options.view, event);
-					var mapInputs = inputs.map(function (i) {
-						return ['map' + i, (0, _graflow.Mapper)(function (v) {
-							return [i, v];
-						})];
-					});
-	
-					var comps = (0, _BlockComponents2.default)(options.components || {});
-	
-					var outputDemuxer = _graflow.Demuxer.apply(undefined, _toConsumableArray(eventOutputs));
-	
-					var components = _extends({ state: state, events: events, view: view, comps: comps,
-						outputDemuxer: outputDemuxer, eventState: eventState, event: event }, toObject(mapInputs));
-	
-					var inputConnections = (0, _utils.flatMap)(inputs.map(function (input) {
-						return [['in.' + input, 'map' + input], ['map' + input, 'event']];
+				var View = function View(view, component) {
+					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
+						return (0, _Message.isMessage)(v) && v.blocks.includes('view');
+					}), (0, _graflow.Mapper)(function (m) {
+						return m.values;
+					}), ViewComponent(view, component), (0, _graflow.Mapper)(function (v) {
+						return (0, _Message.Message)('out', 'vdom', v);
 					}));
-	
-					var outputConnections = eventOutputs.map(function (output) {
-						return ['outputDemuxer.' + output, 'out.' + output];
-					});
-	
-					var connections = inputConnections.concat(outputConnections).concat([['events.state', 'state'], ['events.components', 'comps'], ['events.outputs', 'outputDemuxer'], ['event', 'eventState.event'], ['comps.events', 'eventState.event'], ['state.state', 'eventState.state'], ['eventState', 'events'], ['comps.vdom', 'view.vdom'], ['state.state', 'view.state'], ['state.outputs', 'outputDemuxer'], ['state.components', 'comps'], ['view', 'out.vdom']]);
-	
-					return (0, _graflow.Component)({ inputs: inputs, outputs: outputs, components: components, connections: connections });
 				};
 	
-				exports.default = Block;
+				exports.default = View;
 	
 				/***/
 			},
@@ -2716,6 +3149,160 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				};
 	
+				var _BusBlock = __webpack_require__(18);
+	
+				var _BusBlock2 = _interopRequireDefault(_BusBlock);
+	
+				var _Bus = __webpack_require__(19);
+	
+				var _Bus2 = _interopRequireDefault(_Bus);
+	
+				var _Inputs = __webpack_require__(20);
+	
+				var _Inputs2 = _interopRequireDefault(_Inputs);
+	
+				var _Outputs = __webpack_require__(21);
+	
+				var _Outputs2 = _interopRequireDefault(_Outputs);
+	
+				var _State = __webpack_require__(14);
+	
+				var _State2 = _interopRequireDefault(_State);
+	
+				var _Events = __webpack_require__(15);
+	
+				var _Events2 = _interopRequireDefault(_Events);
+	
+				var _View = __webpack_require__(16);
+	
+				var _View2 = _interopRequireDefault(_View);
+	
+				var _Dom = __webpack_require__(22);
+	
+				var _Dom2 = _interopRequireDefault(_Dom);
+	
+				var _CustomBlocks = __webpack_require__(23);
+	
+				var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
+	
+				var _graflow = __webpack_require__(3);
+	
+				function _interopRequireDefault(obj) {
+					return obj && obj.__esModule ? obj : { default: obj };
+				}
+	
+				function _objectWithoutProperties(obj, keys) {
+					var target = {};for (var i in obj) {
+						if (keys.indexOf(i) >= 0) continue;if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;target[i] = obj[i];
+					}return target;
+				}
+	
+				var Block = function Block(options) {
+					var _options$on = options.on,
+					    on = _options$on === undefined ? {} : _options$on,
+					    _options$blocks = options.blocks,
+					    blocks = _options$blocks === undefined ? {} : _options$blocks,
+					    _options$view = options.view,
+					    stateToView = _options$view === undefined ? function () {} : _options$view;
+	
+					var stateHandler = on.state,
+					    busHandler = on.bus,
+					    eventHandlers = _objectWithoutProperties(on, ['state', 'bus']);
+	
+					var bus = (0, _Bus2.default)(busHandler);
+	
+					return (0, _BusBlock2.default)(_extends({}, (0, _CustomBlocks2.default)(blocks), {
+						inputs: (0, _Inputs2.default)(),
+						events: (0, _Events2.default)(eventHandlers),
+						state: (0, _State2.default)(stateHandler),
+						dom: (0, _Dom2.default)(),
+						view: (0, _View2.default)(stateToView, bus),
+						outputs: (0, _Outputs2.default)(),
+						bus: bus
+					}));
+				};
+	
+				exports.default = Block;
+	
+				/***/
+			},
+			/* 18 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _graflow = __webpack_require__(3);
+	
+				function _toConsumableArray(arr) {
+					if (Array.isArray(arr)) {
+						for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+							arr2[i] = arr[i];
+						}return arr2;
+					} else {
+						return Array.from(arr);
+					}
+				}
+	
+				var BusBlock = function BusBlock(blocks) {
+					var blockNames = Object.keys(blocks);
+	
+					var connectionsToBus = blockNames.filter(function (x) {
+						return !['outputs', 'bus'].includes(x);
+					}).map(function (name) {
+						return [name, 'bus'];
+					});
+	
+					var connectionsFromBus = blockNames.filter(function (x) {
+						return !['inputs', 'bus'].includes(x);
+					}).map(function (name) {
+						return ['bus', name];
+					});
+	
+					var connections = [].concat(_toConsumableArray(connectionsToBus), _toConsumableArray(connectionsFromBus), [['in', 'inputs'], ['outputs', 'out']]);
+	
+					return (0, _graflow.Component)({ connections: connections, components: blocks });
+				};
+	
+				exports.default = BusBlock;
+	
+				/***/
+			},
+			/* 19 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _graflow = __webpack_require__(3);
+	
+				var _Message = __webpack_require__(5);
+	
+				var Bus = function Bus(busHandler) {
+					return (0, _graflow.Chain)((0, _graflow.ArraySerializer)(), (0, _graflow.Filter)(_Message.isMessage), (0, _graflow.Mapper)(busHandler || function (m) {
+						return m;
+					}));
+				};
+	
+				exports.default = Bus;
+	
+				/***/
+			},
+			/* 20 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
 				var _slicedToArray = function () {
 					function sliceIterator(arr, i) {
 						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
@@ -2744,7 +3331,140 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _graflow = __webpack_require__(3);
 	
+				var _Message = __webpack_require__(5);
+	
+				var _Message2 = _interopRequireDefault(_Message);
+	
+				function _interopRequireDefault(obj) {
+					return obj && obj.__esModule ? obj : { default: obj };
+				}
+	
+				var Inputs = function Inputs() {
+					return (0, _graflow.Chain)((0, _graflow.Mapper)(function (v) {
+						return Object.entries(v).map(function (_ref) {
+							var _ref2 = _slicedToArray(_ref, 2),
+							    name = _ref2[0],
+							    value = _ref2[1];
+	
+							return (0, _Message2.default)('events', 'event', [['in', name, value]]);
+						});
+					}));
+				};
+	
+				exports.default = Inputs;
+	
+				/***/
+			},
+			/* 21 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _graflow = __webpack_require__(3);
+	
+				var _Message = __webpack_require__(5);
+	
+				var Outputs = function Outputs() {
+					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
+						return (0, _Message.isMessage)(v) && v.blocks.includes('out');
+					}), (0, _graflow.Mapper)(function (m) {
+						return m.values;
+					}));
+				};
+	
+				exports.default = Outputs;
+	
+				/***/
+			},
+			/* 22 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _Message = __webpack_require__(5);
+	
+				var _graflow = __webpack_require__(3);
+	
 				var _utils = __webpack_require__(4);
+	
+				var DomComponent = function DomComponent() {
+					return (0, _graflow.Component)({
+						inputs: ['event', 'node', 'action'],
+						components: {
+							demuxer: (0, _graflow.SortedDemuxer)('node', 'action', 'event'),
+							memory: (0, _graflow.Memorizer)(),
+							action: (0, _graflow.Component)(function (_ref, next) {
+								var action = _ref.value,
+								    node = _ref.memory;
+								return action(node);
+							})
+						},
+						connections: [['in', 'demuxer'], ['demuxer.event', 'out'], ['demuxer.node', 'memory.memory'], ['demuxer.action', 'memory.value'], ['in.event', 'out'], ['in.node', 'memory.memory'], ['in.action', 'memory.value'], ['memory', 'action']]
+					});
+				};
+	
+				var Dom = function Dom() {
+					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
+						return (0, _Message.isMessage)(v) && v.blocks.includes('dom');
+					}), (0, _graflow.Mapper)(function (m) {
+						return m.values;
+					}), DomComponent(), (0, _graflow.Mapper)(function (v) {
+						return (0, _Message.Message)('events', 'event', v);
+					}));
+				};
+	
+				exports.default = Dom;
+	
+				/***/
+			},
+			/* 23 */
+			/***/function (module, exports, __webpack_require__) {
+	
+				'use strict';
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _slicedToArray = function () {
+					function sliceIterator(arr, i) {
+						var _arr = [];var _n = true;var _d = false;var _e = undefined;try {
+							for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+								_arr.push(_s.value);if (i && _arr.length === i) break;
+							}
+						} catch (err) {
+							_d = true;_e = err;
+						} finally {
+							try {
+								if (!_n && _i["return"]) _i["return"]();
+							} finally {
+								if (_d) throw _e;
+							}
+						}return _arr;
+					}return function (arr, i) {
+						if (Array.isArray(arr)) {
+							return arr;
+						} else if (Symbol.iterator in Object(arr)) {
+							return sliceIterator(arr, i);
+						} else {
+							throw new TypeError("Invalid attempt to destructure non-iterable instance");
+						}
+					};
+				}();
+	
+				var _utils = __webpack_require__(4);
+	
+				var _graflow = __webpack_require__(3);
+	
+				var _Message2 = __webpack_require__(5);
 	
 				function _defineProperty(obj, key, value) {
 					if (key in obj) {
@@ -2754,88 +3474,37 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return obj;
 				}
 	
-				function _toConsumableArray(arr) {
-					if (Array.isArray(arr)) {
-						for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-							arr2[i] = arr[i];
-						}return arr2;
-					} else {
-						return Array.from(arr);
+				var CustomMessage = function CustomMessage(name, value) {
+					if ((0, _utils.isObject)(value) && Object.keys(value).length > 0) {
+						return Object.entries(value).map(function (_ref) {
+							var _ref2 = _slicedToArray(_ref, 2),
+							    k = _ref2[0],
+							    v = _ref2[1];
+	
+							return k === 'vdom' ? (0, _Message2.Message)('view', 'vdom', _defineProperty({}, name, v)) : (0, _Message2.Message)('events', 'event', [[name, k, v]]);
+						});
 					}
-				}
-	
-				var ComponentWrapper = function ComponentWrapper(comp, name) {
-					var compInputs = Object.keys(comp.inputs);
-					var compOutputs = Object.keys(comp.outputs);
-	
-					var components = {
-						main: comp,
-						demuxer: _graflow.Demuxer.apply(undefined, _toConsumableArray(compInputs)),
-						muxer: _graflow.Hub.apply(undefined, _toConsumableArray(compOutputs))
-					};
-	
-					var connections = [['in', 'demuxer'], ['muxer', 'out']].concat(compInputs.map(function (input) {
-						return ['demuxer.' + input, 'main.' + input];
-					})).concat(compOutputs.map(function (output) {
-						return ['main.' + output, 'muxer.' + output];
-					}));
-	
-					var result = (0, _graflow.Component)({ components: components, connections: connections });
-					if (name) result = (0, _graflow.Chain)(result, (0, _graflow.Mapper)(function (v) {
-						return _defineProperty({}, name, v);
-					}));
-	
-					return result;
+					return (0, _Message2.Message)('events', 'event', [[name, 'default', value]]);
 				};
 	
-				var Post = function Post() {
-					return (0, _graflow.Chain)((0, _graflow.Component)(function (v, next) {
-						var _Object$entries$ = _slicedToArray(Object.entries(v)[0], 2),
-						    compName = _Object$entries$[0],
-						    msg = _Object$entries$[1];
-	
-						var _Object$entries$2 = _slicedToArray(Object.entries(msg)[0], 2),
-						    signal = _Object$entries$2[0],
-						    value = _Object$entries$2[1];
-	
-						if (signal === 'vdom') {
-							next({ vdom: _defineProperty({}, compName, value) });
-						} else {
-							var name = signal === 'default' ? compName : compName + '.' + signal;
-							next({ events: [name, value] });
-						}
-					}), (0, _graflow.Demuxer)('events', 'vdom'));
+				var NamedBlock = function NamedBlock(name, block) {
+					return (0, _graflow.Chain)((0, _graflow.Filter)(_Message2.isMessage), (0, _graflow.Filter)(function (_ref3) {
+						var blocks = _ref3.blocks;
+						return (0, _utils.isUndefined)(blocks) || blocks.includes(name);
+					}), (0, _graflow.Mapper)(function (v) {
+						return v.values.default ? v.values.default : v.values;
+					}), block, (0, _graflow.ArraySerializer)(), (0, _graflow.Mapper)(function (m) {
+						return CustomMessage(name, m);
+					}), (0, _graflow.ArraySerializer)());
 				};
 	
-				var BlockComponents = function BlockComponents(comps) {
-					if (Object.keys(comps).length === 0) return (0, _graflow.Demuxer)('events', 'vdom');
-	
-					var compsNames = Object.keys(comps);
-					var wrappedComps = Object.entries(comps).reduce(function (acc, _ref2) {
-						var _ref3 = _slicedToArray(_ref2, 2),
-						    name = _ref3[0],
-						    c = _ref3[1];
-	
-						acc[name] = ComponentWrapper(c, name);
-						return acc;
-					}, {});
-	
-					var components = _extends({
-						demuxer: _graflow.Demuxer.apply(undefined, _toConsumableArray(compsNames))
-					}, wrappedComps, {
-						post: Post()
+				var CustomBlocks = function CustomBlocks(arg) {
+					return (0, _utils.mapObject)(arg, function (name, block) {
+						return [name, NamedBlock(name, block)];
 					});
-	
-					var connections = [['in', 'demuxer'], ['post.vdom', 'out.vdom'], ['post.events', 'out.events']].concat((0, _utils.flatMap)(compsNames.map(function (n) {
-						return [['demuxer.' + n, n], [n, 'post']];
-					})));
-	
-					var outputs = ['events', 'vdom'];
-	
-					return (0, _graflow.Component)({ components: components, connections: connections, outputs: outputs });
 				};
 	
-				exports.default = BlockComponents;
+				exports.default = CustomBlocks;
 	
 				/***/
 			}
@@ -2878,9 +3547,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var Counter = function Counter() {
 	  return (0, _cyclow.Block)({
-	    components: { ticker: (0, _graflow.Ticker)(1000) },
+	    blocks: { ticker: (0, _graflow.Ticker)(1000) },
 	    on: {
-	      init: function init() {
+	      'in.init': function inInit() {
 	        return 'ticker';
 	      },
 	      ticker: function ticker() {
@@ -2978,7 +3647,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Mapper = __webpack_require__(2);
+		var _Mapper = __webpack_require__(3);
 		
 		Object.defineProperty(exports, 'Mapper', {
 		  enumerable: true,
@@ -2987,7 +3656,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Filter = __webpack_require__(3);
+		var _Filter = __webpack_require__(4);
 		
 		Object.defineProperty(exports, 'Filter', {
 		  enumerable: true,
@@ -2996,7 +3665,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Counter = __webpack_require__(4);
+		var _Counter = __webpack_require__(5);
 		
 		Object.defineProperty(exports, 'Counter', {
 		  enumerable: true,
@@ -3005,7 +3674,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Accumulator = __webpack_require__(5);
+		var _Accumulator = __webpack_require__(6);
 		
 		Object.defineProperty(exports, 'Accumulator', {
 		  enumerable: true,
@@ -3014,7 +3683,16 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Hub = __webpack_require__(6);
+		var _Memorizer = __webpack_require__(7);
+		
+		Object.defineProperty(exports, 'Memorizer', {
+		  enumerable: true,
+		  get: function get() {
+		    return _interopRequireDefault(_Memorizer).default;
+		  }
+		});
+		
+		var _Hub = __webpack_require__(12);
 		
 		Object.defineProperty(exports, 'Hub', {
 		  enumerable: true,
@@ -3023,7 +3701,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Muxer = __webpack_require__(7);
+		var _Muxer = __webpack_require__(13);
 		
 		Object.defineProperty(exports, 'Muxer', {
 		  enumerable: true,
@@ -3032,7 +3710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Demuxer = __webpack_require__(9);
+		var _Demuxer = __webpack_require__(11);
 		
 		Object.defineProperty(exports, 'Demuxer', {
 		  enumerable: true,
@@ -3041,7 +3719,16 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Iterator = __webpack_require__(10);
+		var _SortedDemuxer = __webpack_require__(8);
+		
+		Object.defineProperty(exports, 'SortedDemuxer', {
+		  enumerable: true,
+		  get: function get() {
+		    return _interopRequireDefault(_SortedDemuxer).default;
+		  }
+		});
+		
+		var _Iterator = __webpack_require__(14);
 		
 		Object.defineProperty(exports, 'Iterator', {
 		  enumerable: true,
@@ -3050,7 +3737,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Serializer = __webpack_require__(11);
+		var _Serializer = __webpack_require__(10);
 		
 		Object.defineProperty(exports, 'Serializer', {
 		  enumerable: true,
@@ -3059,7 +3746,16 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Repeater = __webpack_require__(12);
+		var _ArraySerializer = __webpack_require__(15);
+		
+		Object.defineProperty(exports, 'ArraySerializer', {
+		  enumerable: true,
+		  get: function get() {
+		    return _interopRequireDefault(_ArraySerializer).default;
+		  }
+		});
+		
+		var _Repeater = __webpack_require__(16);
 		
 		Object.defineProperty(exports, 'Repeater', {
 		  enumerable: true,
@@ -3068,7 +3764,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _UniqueFilter = __webpack_require__(13);
+		var _UniqueFilter = __webpack_require__(17);
 		
 		Object.defineProperty(exports, 'UniqueFilter', {
 		  enumerable: true,
@@ -3077,7 +3773,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Logger = __webpack_require__(14);
+		var _Logger = __webpack_require__(18);
 		
 		Object.defineProperty(exports, 'Logger', {
 		  enumerable: true,
@@ -3086,7 +3782,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Chain = __webpack_require__(8);
+		var _Chain = __webpack_require__(9);
 		
 		Object.defineProperty(exports, 'Chain', {
 		  enumerable: true,
@@ -3095,7 +3791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Checker = __webpack_require__(15);
+		var _Checker = __webpack_require__(19);
 		
 		Object.defineProperty(exports, 'Checker', {
 		  enumerable: true,
@@ -3104,7 +3800,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Guard = __webpack_require__(16);
+		var _Guard = __webpack_require__(20);
 		
 		Object.defineProperty(exports, 'Guard', {
 		  enumerable: true,
@@ -3113,7 +3809,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Identity = __webpack_require__(17);
+		var _Identity = __webpack_require__(21);
 		
 		Object.defineProperty(exports, 'Identity', {
 		  enumerable: true,
@@ -3122,7 +3818,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Delayer = __webpack_require__(18);
+		var _Delayer = __webpack_require__(22);
 		
 		Object.defineProperty(exports, 'Delayer', {
 		  enumerable: true,
@@ -3131,7 +3827,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  }
 		});
 		
-		var _Ticker = __webpack_require__(19);
+		var _Ticker = __webpack_require__(23);
 		
 		Object.defineProperty(exports, 'Ticker', {
 		  enumerable: true,
@@ -3144,7 +3840,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	/***/ },
 	/* 1 */
-	/***/ function(module, exports) {
+	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
 		
@@ -3154,179 +3850,268 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 		
-		var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+		var _utils = __webpack_require__(2);
 		
-		var toComponent = function toComponent(arg) {
-		  if ((typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object') return arg;
-		  var node = toNode(arg);
+		var componentFromFunction = function componentFromFunction(func) {
+		  var node = toNode(func);
+		
 		  return {
-		    start: function start() {
-		      var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-		      return node.received(v);
+		    send: function send() {
+		      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+		      return node.send(value);
+		    },
+		    on: function on(handler) {
+		      return node.on(handler);
 		    },
 		    inputs: { default: node },
-		    outputs: { default: node },
-		    in: { default: node },
-		    out: { default: node }
+		    outputs: { default: node }
 		  };
 		};
 		
 		var toNode = function toNode(arg) {
-		  var result = arg;
-		  if (typeof arg === 'function') {
-		    result = node(arg);
-		  }
-		  return result;
+		  if ((0, _utils.isFunction)(arg)) return node(arg);
+		  return arg;
 		};
 		
 		var node = function node(onNext) {
 		  var queue = [];
 		  var listeners = [];
-		  var next = function next(v) {
-		    listeners.forEach(function (l) {
-		      return l.addToQueue(v);
+		
+		  var broadcast = function broadcast(arg) {
+		    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+		
+		    arg.forEach(function (l) {
+		      return l.addToQueue(value);
 		    });
-		    listeners.forEach(function (l) {
+		    arg.forEach(function (l) {
 		      return l.processQueue();
 		    });
 		  };
 		
-		  var obj = {
-		    addListener: function addListener(listener) {
-		      listeners.push(toNode(listener));
-		    },
-		    on: function on(listener) {
-		      obj.addListener(listener);
-		    },
-		    connect: function connect(listener) {
-		      obj.addListener(listener);
-		    },
-		    addToQueue: function addToQueue(v) {
-		      queue.push(v);
-		    },
-		    received: function received() {
-		      var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-		
-		      obj.addToQueue(v);
-		      obj.processQueue();
-		    },
-		    send: function send() {
-		      var v = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-		      obj.received(v);
-		    },
-		    processQueue: function processQueue() {
-		      var values = queue.length;
-		      for (var i = 1; i <= values; i++) {
-		        var v = queue.shift();
-		        onNext(v, next);
-		      }
-		    }
+		  var next = function next(v) {
+		    return broadcast(listeners, v);
 		  };
 		
-		  return obj;
+		  var addListener = function addListener(node) {
+		    return listeners.push(node);
+		  };
+		  var on = function on(handler) {
+		    return addListener(toNode(function (v) {
+		      return handler(v);
+		    }));
+		  };
+		  var addToQueue = function addToQueue(v) {
+		    return queue.push(v);
+		  };
+		  var processQueue = function processQueue() {
+		    return (0, _utils.applyAndEmpty)(queue, function (v) {
+		      return onNext(v, next);
+		    });
+		  };
+		
+		  var send = function send() {
+		    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+		
+		    addToQueue(value);
+		    processQueue();
+		  };
+		
+		  return { on: on, send: send, addListener: addListener, addToQueue: addToQueue, processQueue: processQueue };
 		};
 		
-		var select = function select(name, components) {
-		  var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'input';
+		var selectNode = function selectNode(name, components) {
+		  var io = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'inputs';
 		
-		  var direction = io === 'input' ? 'inputs' : 'outputs';
+		  var direction = io === 'inputs' ? 'inputs' : 'outputs';
 		
 		  var _name$split = name.split('.', 2),
 		      _name$split2 = _slicedToArray(_name$split, 2),
 		      componentName = _name$split2[0],
-		      streamName = _name$split2[1];
+		      _name$split2$ = _name$split2[1],
+		      nodeName = _name$split2$ === undefined ? 'default' : _name$split2$;
 		
-		  var ioStreams = void 0;
 		  var component = components[componentName];
-		
-		  if (component !== undefined) {
-		    ioStreams = component[direction];
-		    if (ioStreams !== undefined && streamName === undefined) {
-		      var ioNames = Object.keys(ioStreams);
-		      if (ioNames.length === 1) streamName = ioNames[0];
-		    }
+		  if ((0, _utils.isUndefined)(component)) {
+		    throw new Error(componentName + ' component not found!');
 		  }
 		
-		  if (ioStreams === undefined || ioStreams[streamName] === undefined) {
-		    throw new Error(io + ' stream ' + name + ' not found!');
+		  var nodes = component[direction];
+		
+		  if ((0, _utils.isUndefined)(nodes) || (0, _utils.isUndefined)(nodes[nodeName])) {
+		    throw new Error(name + ' port not found!');
 		  }
 		
-		  return ioStreams[streamName];
+		  return nodes[nodeName];
 		};
 		
-		var component2 = function component2(_ref) {
-		  var components = _ref.components,
-		      _ref$connections = _ref.connections,
-		      connections = _ref$connections === undefined ? [] : _ref$connections,
-		      _ref$inputs = _ref.inputs,
-		      inputs = _ref$inputs === undefined ? ['default'] : _ref$inputs,
-		      _ref$outputs = _ref.outputs,
-		      outputs = _ref$outputs === undefined ? ['default'] : _ref$outputs;
+		var componentFromObject = function componentFromObject(obj) {
+		  var components = obj.components,
+		      _obj$connections = obj.connections,
+		      connections = _obj$connections === undefined ? [] : _obj$connections,
+		      _obj$inputs = obj.inputs,
+		      inputs = _obj$inputs === undefined ? [] : _obj$inputs,
+		      _obj$outputs = obj.outputs,
+		      outputs = _obj$outputs === undefined ? [] : _obj$outputs;
 		
-		  Object.keys(components).forEach(function (key) {
-		    components[key] = toComponent(components[key]);
-		  });
 		
-		  var inNodes = inputs.reduce(function (acc, i) {
-		    acc[i] = node(function (v, next) {
+		  var inputNames = (0, _utils.unique)(inputs.concat('default'));
+		  var outputNames = (0, _utils.unique)(outputs.concat('default'));
+		
+		  var toNodes = function toNodes(i) {
+		    return [i, node(function (v, next) {
 		      return next(v);
-		    });
-		    return acc;
-		  }, {});
-		
-		  var outNodes = outputs.reduce(function (acc, i) {
-		    acc[i] = node(function (v, next) {
-		      return next(v);
-		    });
-		    return acc;
-		  }, {});
+		    })];
+		  };
+		  var inNodes = (0, _utils.arrayToObject)(inputNames, toNodes);
+		  var outNodes = (0, _utils.arrayToObject)(outputNames, toNodes);
 		
 		  components.in = { inputs: inNodes, outputs: inNodes };
 		  components.out = { inputs: outNodes, outputs: outNodes };
 		
-		  connections.forEach(function (_ref2) {
-		    var _ref3 = _slicedToArray(_ref2, 2),
-		        from = _ref3[0],
-		        to = _ref3[1];
+		  connections.forEach(function (_ref) {
+		    var _ref2 = _slicedToArray(_ref, 2),
+		        from = _ref2[0],
+		        to = _ref2[1];
 		
-		    var streamOut = select(from, components, 'output');
-		    var streamIn = select(to, components, 'input');
-		
-		    streamOut.addListener(streamIn);
+		    var outNode = selectNode(from, components, 'outputs');
+		    var inNode = selectNode(to, components, 'inputs');
+		    outNode.addListener(inNode);
 		  });
 		
-		  var comp = {
-		    start: function start() {
-		      var initialValues = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : { default: {} };
+		  var on = function on() {
+		    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+		      args[_key] = arguments[_key];
+		    }
 		
-		      if ((typeof initialValues === 'undefined' ? 'undefined' : _typeof(initialValues)) !== 'object') {
-		        initialValues = { default: initialValues };
-		      }
-		      for (var key in initialValues) {
-		        comp.inputs[key].received(initialValues[key]);
-		      }
-		    },
-		    inputs: inNodes,
-		    outputs: outNodes,
-		    in: inNodes,
-		    out: outNodes
+		    var _args$splice$reverse = args.splice(0, 2).reverse(),
+		        _args$splice$reverse2 = _slicedToArray(_args$splice$reverse, 2),
+		        handler = _args$splice$reverse2[0],
+		        _args$splice$reverse3 = _args$splice$reverse2[1],
+		        name = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
+		
+		    outNodes[name].on(handler);
 		  };
 		
-		  return comp;
+		  var send = function send() {
+		    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+		      args[_key2] = arguments[_key2];
+		    }
+		
+		    var _args$splice$reverse4 = args.splice(0, 2).reverse(),
+		        _args$splice$reverse5 = _slicedToArray(_args$splice$reverse4, 2),
+		        _args$splice$reverse6 = _args$splice$reverse5[0],
+		        value = _args$splice$reverse6 === undefined ? {} : _args$splice$reverse6,
+		        _args$splice$reverse7 = _args$splice$reverse5[1],
+		        name = _args$splice$reverse7 === undefined ? 'default' : _args$splice$reverse7;
+		
+		    inNodes[name].send(value);
+		  };
+		
+		  return { send: send, on: on, inputs: inNodes, outputs: outNodes };
 		};
 		
 		var Component = function Component(arg) {
-		  if (typeof arg === 'function') {
-		    return toComponent(arg);
-		  } else {
-		    return component2(arg);
-		  }
+		  if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg);
+		  return componentFromObject(arg);
 		};
 		
 		exports.default = Component;
 	
 	/***/ },
 	/* 2 */
+	/***/ function(module, exports) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+		
+		var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+		
+		var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+		
+		function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+		
+		function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+		
+		var pipe = function pipe() {
+		  for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
+		    funcs[_key] = arguments[_key];
+		  }
+		
+		  return funcs.reduce(function (f, g) {
+		    return function () {
+		      return g(f.apply(undefined, arguments));
+		    };
+		  });
+		};
+		
+		var isFunction = function isFunction(arg) {
+		  return typeof arg === 'function';
+		};
+		var isObject = function isObject(arg) {
+		  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object';
+		};
+		var isUndefined = function isUndefined(arg) {
+		  return arg === undefined;
+		};
+		
+		var pairToObject = function pairToObject(_ref) {
+		  var _ref2 = _slicedToArray(_ref, 2),
+		      key = _ref2[0],
+		      value = _ref2[1];
+		
+		  return _defineProperty({}, key, value);
+		};
+		
+		var pairsToObject = function pairsToObject(arr) {
+		  return arr.reduce(function (obj, pair) {
+		    return _extends({}, obj, pairToObject(pair));
+		  }, {});
+		};
+		
+		var arrayToObject = function arrayToObject(arr, func) {
+		  return pairsToObject(arr.map(func));
+		};
+		
+		var applyAndEmpty = function applyAndEmpty(arr, func) {
+		  var values = arr.length;
+		  for (var i = 1; i <= values; i++) {
+		    func(arr.shift());
+		  }
+		};
+		
+		var flatten = function flatten(v) {
+		  var _ref4;
+		
+		  return (_ref4 = []).concat.apply(_ref4, _toConsumableArray(v));
+		};
+		
+		var unique = function unique(arg) {
+		  return [].concat(_toConsumableArray(new Set(arg)));
+		};
+		
+		var toArray = function toArray(arg) {
+		  return [].concat(arg);
+		};
+		
+		exports.pipe = pipe;
+		exports.isFunction = isFunction;
+		exports.isObject = isObject;
+		exports.isUndefined = isUndefined;
+		exports.arrayToObject = arrayToObject;
+		exports.pairToObject = pairToObject;
+		exports.pairsToObject = pairsToObject;
+		exports.applyAndEmpty = applyAndEmpty;
+		exports.flatten = flatten;
+		exports.unique = unique;
+		exports.toArray = toArray;
+	
+	/***/ },
+	/* 3 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3350,7 +4135,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Mapper;
 	
 	/***/ },
-	/* 3 */
+	/* 4 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3374,7 +4159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Filter;
 	
 	/***/ },
-	/* 4 */
+	/* 5 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3403,7 +4188,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Counter;
 	
 	/***/ },
-	/* 5 */
+	/* 6 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3443,7 +4228,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Accumulator;
 	
 	/***/ },
-	/* 6 */
+	/* 7 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3456,36 +4241,38 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		var _Component2 = _interopRequireDefault(_Component);
 		
-		var _Mapper = __webpack_require__(2);
+		var _Mapper = __webpack_require__(3);
 		
 		var _Mapper2 = _interopRequireDefault(_Mapper);
 		
+		var _SortedDemuxer = __webpack_require__(8);
+		
+		var _SortedDemuxer2 = _interopRequireDefault(_SortedDemuxer);
+		
 		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 		
-		function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+		var Memorizer = function Memorizer() {
+		  var memory = void 0;
 		
-		var Hub = function Hub() {
-		  for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
-		    inputs[_key] = arguments[_key];
-		  }
-		
-		  var components = {};
-		  var connections = [];
-		
-		  inputs.forEach(function (i) {
-		    components[i] = (0, _Mapper2.default)(function (v) {
-		      return _defineProperty({}, i, v);
-		    });
-		    connections.push(['in.' + i, i], [i, 'out']);
+		  return (0, _Component2.default)({
+		    inputs: ['memory', 'value'],
+		    components: {
+		      memory: (0, _Component2.default)(function (v) {
+		        memory = v;
+		      }),
+		      mapper: (0, _Mapper2.default)(function (value) {
+		        return { value: value, memory: memory };
+		      }),
+		      demuxer: (0, _SortedDemuxer2.default)('memory', 'value')
+		    },
+		    connections: [['in.memory', 'memory'], ['in.value', 'mapper'], ['mapper', 'out'], ['in', 'demuxer'], ['demuxer.memory', 'memory'], ['demuxer.value', 'mapper']]
 		  });
-		
-		  return (0, _Component2.default)({ components: components, connections: connections, inputs: inputs });
 		};
 		
-		exports.default = Hub;
+		exports.default = Memorizer;
 	
 	/***/ },
-	/* 7 */
+	/* 8 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3494,40 +4281,42 @@ return /******/ (function(modules) { // webpackBootstrap
 		  value: true
 		});
 		
-		var _Chain = __webpack_require__(8);
+		var _Chain = __webpack_require__(9);
 		
 		var _Chain2 = _interopRequireDefault(_Chain);
 		
-		var _Hub = __webpack_require__(6);
+		var _Mapper = __webpack_require__(3);
 		
-		var _Hub2 = _interopRequireDefault(_Hub);
+		var _Mapper2 = _interopRequireDefault(_Mapper);
 		
-		var _Accumulator = __webpack_require__(5);
+		var _Serializer = __webpack_require__(10);
 		
-		var _Accumulator2 = _interopRequireDefault(_Accumulator);
+		var _Serializer2 = _interopRequireDefault(_Serializer);
 		
-		var _Filter = __webpack_require__(3);
+		var _Demuxer = __webpack_require__(11);
 		
-		var _Filter2 = _interopRequireDefault(_Filter);
+		var _Demuxer2 = _interopRequireDefault(_Demuxer);
+		
+		var _utils = __webpack_require__(2);
 		
 		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 		
-		var Muxer = function Muxer() {
-		  for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
-		    inputs[_key] = arguments[_key];
+		var SortedDemuxer = function SortedDemuxer() {
+		  for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
+		    outputs[_key] = arguments[_key];
 		  }
 		
-		  return (0, _Chain2.default)(_Hub2.default.apply(undefined, inputs), (0, _Accumulator2.default)(), (0, _Filter2.default)(function (v) {
-		    return inputs.every(function (i) {
-		      return v[i] !== undefined;
+		  return (0, _Chain2.default)((0, _Mapper2.default)(function (obj) {
+		    return outputs.map(function (k) {
+		      return [k, obj[k]];
 		    });
-		  }));
+		  }), (0, _Serializer2.default)(), (0, _Mapper2.default)(_utils.pairToObject), _Demuxer2.default.apply(undefined, outputs));
 		};
 		
-		exports.default = Muxer;
+		exports.default = SortedDemuxer;
 	
 	/***/ },
-	/* 8 */
+	/* 9 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3580,90 +4369,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Chain;
 	
 	/***/ },
-	/* 9 */
-	/***/ function(module, exports, __webpack_require__) {
-	
-		'use strict';
-		
-		Object.defineProperty(exports, "__esModule", {
-		  value: true
-		});
-		
-		var _Component = __webpack_require__(1);
-		
-		var _Component2 = _interopRequireDefault(_Component);
-		
-		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-		
-		var flatMap = function flatMap(v) {
-		  return [].concat.apply([], v);
-		};
-		
-		var Demuxer = function Demuxer() {
-		  for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
-		    outputs[_key] = arguments[_key];
-		  }
-		
-		  return (0, _Component2.default)({
-		    components: outputs.reduce(function (acc, output) {
-		      acc[output] = (0, _Component2.default)(function (v, next) {
-		        if (v[output] !== undefined) next(v[output]);
-		      });
-		      return acc;
-		    }, {}),
-		    outputs: outputs,
-		    connections: flatMap(outputs.map(function (out) {
-		      return [['in.default', out], [out, 'out.' + out]];
-		    }))
-		  });
-		};
-		
-		exports.default = Demuxer;
-	
-	/***/ },
 	/* 10 */
-	/***/ function(module, exports, __webpack_require__) {
-	
-		'use strict';
-		
-		Object.defineProperty(exports, "__esModule", {
-		  value: true
-		});
-		
-		var _Component = __webpack_require__(1);
-		
-		var _Component2 = _interopRequireDefault(_Component);
-		
-		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-		
-		var Iterator = function Iterator(iterable) {
-		  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-		      _ref$cyclic = _ref.cyclic,
-		      cyclic = _ref$cyclic === undefined ? false : _ref$cyclic;
-		
-		  var iterator = iterable[Symbol.iterator]();
-		
-		  return (0, _Component2.default)(function (v, next) {
-		    var _iterator$next = iterator.next(),
-		        value = _iterator$next.value,
-		        done = _iterator$next.done;
-		
-		    if (done && cyclic) {
-		      iterator = iterable[Symbol.iterator]();
-		      var _iterator$next2 = iterator.next();
-		
-		      value = _iterator$next2.value;
-		      done = _iterator$next2.done;
-		    }
-		
-		    if (!done) next(value);
-		  });
-		};
-		
-		exports.default = Iterator;
-	
-	/***/ },
-	/* 11 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3711,7 +4417,204 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Serializer;
 	
 	/***/ },
+	/* 11 */
+	/***/ function(module, exports, __webpack_require__) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _Component = __webpack_require__(1);
+		
+		var _Component2 = _interopRequireDefault(_Component);
+		
+		var _utils = __webpack_require__(2);
+		
+		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+		
+		var Demuxer = function Demuxer() {
+		  for (var _len = arguments.length, outputs = Array(_len), _key = 0; _key < _len; _key++) {
+		    outputs[_key] = arguments[_key];
+		  }
+		
+		  return (0, _Component2.default)({
+		    components: outputs.reduce(function (acc, output) {
+		      acc[output] = (0, _Component2.default)(function (v, next) {
+		        if (v[output] !== undefined) next(v[output]);
+		      });
+		      return acc;
+		    }, {}),
+		    outputs: outputs,
+		    connections: (0, _utils.flatten)(outputs.map(function (out) {
+		      return [['in', out], [out, 'out.' + out]];
+		    })).concat([['in', 'out']])
+		  });
+		};
+		
+		exports.default = Demuxer;
+	
+	/***/ },
 	/* 12 */
+	/***/ function(module, exports, __webpack_require__) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _Component = __webpack_require__(1);
+		
+		var _Component2 = _interopRequireDefault(_Component);
+		
+		var _Mapper = __webpack_require__(3);
+		
+		var _Mapper2 = _interopRequireDefault(_Mapper);
+		
+		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+		
+		function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+		
+		var Hub = function Hub() {
+		  for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
+		    inputs[_key] = arguments[_key];
+		  }
+		
+		  var components = {};
+		  var connections = [];
+		
+		  inputs.forEach(function (i) {
+		    components[i] = (0, _Mapper2.default)(function (v) {
+		      return _defineProperty({}, i, v);
+		    });
+		    connections.push(['in.' + i, i], [i, 'out'], ['in', 'out']);
+		  });
+		
+		  return (0, _Component2.default)({ components: components, connections: connections, inputs: inputs });
+		};
+		
+		exports.default = Hub;
+	
+	/***/ },
+	/* 13 */
+	/***/ function(module, exports, __webpack_require__) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _Chain = __webpack_require__(9);
+		
+		var _Chain2 = _interopRequireDefault(_Chain);
+		
+		var _Hub = __webpack_require__(12);
+		
+		var _Hub2 = _interopRequireDefault(_Hub);
+		
+		var _Accumulator = __webpack_require__(6);
+		
+		var _Accumulator2 = _interopRequireDefault(_Accumulator);
+		
+		var _Filter = __webpack_require__(4);
+		
+		var _Filter2 = _interopRequireDefault(_Filter);
+		
+		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+		
+		var Muxer = function Muxer() {
+		  for (var _len = arguments.length, inputs = Array(_len), _key = 0; _key < _len; _key++) {
+		    inputs[_key] = arguments[_key];
+		  }
+		
+		  return (0, _Chain2.default)(_Hub2.default.apply(undefined, inputs), (0, _Accumulator2.default)(), (0, _Filter2.default)(function (v) {
+		    return inputs.every(function (i) {
+		      return v[i] !== undefined;
+		    });
+		  }));
+		};
+		
+		exports.default = Muxer;
+	
+	/***/ },
+	/* 14 */
+	/***/ function(module, exports, __webpack_require__) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _Component = __webpack_require__(1);
+		
+		var _Component2 = _interopRequireDefault(_Component);
+		
+		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+		
+		var Iterator = function Iterator(iterable) {
+		  var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
+		      _ref$cyclic = _ref.cyclic,
+		      cyclic = _ref$cyclic === undefined ? false : _ref$cyclic;
+		
+		  var iterator = iterable[Symbol.iterator]();
+		
+		  return (0, _Component2.default)(function (v, next) {
+		    var _iterator$next = iterator.next(),
+		        value = _iterator$next.value,
+		        done = _iterator$next.done;
+		
+		    if (done && cyclic) {
+		      iterator = iterable[Symbol.iterator]();
+		      var _iterator$next2 = iterator.next();
+		
+		      value = _iterator$next2.value;
+		      done = _iterator$next2.done;
+		    }
+		
+		    if (!done) next(value);
+		  });
+		};
+		
+		exports.default = Iterator;
+	
+	/***/ },
+	/* 15 */
+	/***/ function(module, exports, __webpack_require__) {
+	
+		'use strict';
+		
+		Object.defineProperty(exports, "__esModule", {
+		  value: true
+		});
+		
+		var _Chain = __webpack_require__(9);
+		
+		var _Chain2 = _interopRequireDefault(_Chain);
+		
+		var _Mapper = __webpack_require__(3);
+		
+		var _Mapper2 = _interopRequireDefault(_Mapper);
+		
+		var _Serializer = __webpack_require__(10);
+		
+		var _Serializer2 = _interopRequireDefault(_Serializer);
+		
+		var _utils = __webpack_require__(2);
+		
+		function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+		
+		var ArraySerializer = function ArraySerializer() {
+		  return (0, _Chain2.default)((0, _Mapper2.default)(_utils.toArray), (0, _Serializer2.default)());
+		};
+		
+		exports.default = ArraySerializer;
+	
+	/***/ },
+	/* 16 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3737,7 +4640,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Repeater;
 	
 	/***/ },
-	/* 13 */
+	/* 17 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3766,7 +4669,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = UniqueFilter;
 	
 	/***/ },
-	/* 14 */
+	/* 18 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3800,7 +4703,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Logger;
 	
 	/***/ },
-	/* 15 */
+	/* 19 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3809,15 +4712,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		  value: true
 		});
 		
-		var _Chain = __webpack_require__(8);
+		var _Chain = __webpack_require__(9);
 		
 		var _Chain2 = _interopRequireDefault(_Chain);
 		
-		var _Mapper = __webpack_require__(2);
+		var _Mapper = __webpack_require__(3);
 		
 		var _Mapper2 = _interopRequireDefault(_Mapper);
 		
-		var _Demuxer = __webpack_require__(9);
+		var _Demuxer = __webpack_require__(11);
 		
 		var _Demuxer2 = _interopRequireDefault(_Demuxer);
 		
@@ -3832,7 +4735,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Checker;
 	
 	/***/ },
-	/* 16 */
+	/* 20 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3847,11 +4750,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		var _Component2 = _interopRequireDefault(_Component);
 		
-		var _Chain = __webpack_require__(8);
+		var _Chain = __webpack_require__(9);
 		
 		var _Chain2 = _interopRequireDefault(_Chain);
 		
-		var _Demuxer = __webpack_require__(9);
+		var _Demuxer = __webpack_require__(11);
 		
 		var _Demuxer2 = _interopRequireDefault(_Demuxer);
 		
@@ -3888,7 +4791,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Guard;
 	
 	/***/ },
-	/* 17 */
+	/* 21 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3897,7 +4800,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		  value: true
 		});
 		
-		var _Mapper = __webpack_require__(2);
+		var _Mapper = __webpack_require__(3);
 		
 		var _Mapper2 = _interopRequireDefault(_Mapper);
 		
@@ -3912,7 +4815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Identity;
 	
 	/***/ },
-	/* 18 */
+	/* 22 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';
@@ -3938,7 +4841,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		exports.default = Delayer;
 	
 	/***/ },
-	/* 19 */
+	/* 23 */
 	/***/ function(module, exports, __webpack_require__) {
 	
 		'use strict';

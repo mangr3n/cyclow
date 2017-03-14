@@ -11,12 +11,12 @@ This a simple counter example:
 
   const Counter = () => Block({
     on: {
-      init:  () => state => 0,
-      click: () => state => state + 1
+      'in.init':  () => state => 0,
+      'dom.click': () => state => state + 1
     },
     view: state => ({
       tag: 'button',
-      on: {click: ['click']},
+      on: {click: 'click'},
       content: `Count: ${state}`
     })
   })
@@ -35,29 +35,12 @@ You can build and open samples in a browser:
   npm run samples
 ```
 
-You can find even more samples at [JS Comp](http://blog.krawaller.se/jscomp/) and compare them with another implementations using frameworks like React, Angular or Cycle.
+You can find even more samples at [JS Comp](http://jscomp.netlify.com) and compare them with another implementations using frameworks like React, Angular or Cycle.
 
 ## Why cyclow?
 There are many JavaScript frameworks so... why another one? Well I really like [Cycle.js]. It's a nice reactive framework. [TSERS] is like [Cycle.js] and it adds a simple state manager and another features. But both are too [pure](https://en.wikipedia.org/wiki/Pure_function) (in the functional programmming sense) for me.
 
 With **cyclow** instead of thinking in a big global model and pure functions, you have to think in components with inputs, outputs and their own state (something like an electronic circuit). I think cyclow is more intuitive and easier while it's still reactive and quite declarative. You can compare cyclow and [Cycle.js] samples at [JS Comp].
-
-## How it works?
-Block is a graflow component factory that creates a component with a structure like this:
-
-![cyclow diagram](https://rawgit.com/pmros/cyclow/master/diagrams/block.svg)
-
-As you can see this component is composed by:
-- Inputs:
-  - `init`: Block component receives this input when application starts. Usually init value is the initial component state.
-- Outputs:
-  - `vdom`: Block component outputs a [Virtual DOM Element](#virtual-dom-element) every time component state updates.
-- Components:
-  - `events`: Every [event message](#event-message) passes through the event component and it will be converted in a *state transformation*, that is a function that takes a state and returns a new state.
-  - `state`: This component takes a *state transformation* and apply it to the current state. So it mutates the state and returns the new state.
-  - `view`: This component takes a state and returns a [Virtual DOM Element](#virtual-dom-element).
-
-A block component do nothing by itself. It needs a `init` input (usually fired by `DOMContentLoaded` document event) and a [renderer](#renderer) that transforms `vdom` output in a real DOM Element and updates the HTML document. Luckily, [run](#run) function does extactly that.
 
 ## <a name="virtual-dom-element"></a>Virtual DOM Element
 cyclow represents DOM elements as Virtual DOM Elements, that is a simple Javascript object with the following (optional) properties:
@@ -71,14 +54,9 @@ This is a virtual DOM element example:
   {
     tag: 'input',
     attrs: { id: 'myInput' },
-    on: { keyup: (e, next) => next(['text', e.target.value]) }
+    on: { keyup: (e, next) => next({text: e.target.value}) }
   }
 ```
-
-## <a name="event-messages"></a> Events messages
-Event messages are arrays with two items:
-- **name**
-- **payload** (optional)
 
 ## <a name="renderer"></a> Renderer
 A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as a input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
@@ -98,9 +76,7 @@ Arguments:
 ### <a name="Block"></a>```Block(options)```
 Arguments:
 - `options`:
-  - `inputs`
-  - `outputs`
-  - `components`
+  - `blocks`
   - `on`
   - `view`
 

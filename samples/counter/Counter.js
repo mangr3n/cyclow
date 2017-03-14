@@ -2,8 +2,8 @@ import { Block } from '../../dist/cyclow'
 
 const Counter = () => Block({
   on: {
-    init: () => state => 0,
-    click: () => state => state + 1
+    'in.init': () => state => 0,
+    'dom.click': () => state => state + 1
   },
   view: state => ({
     tag: 'button',

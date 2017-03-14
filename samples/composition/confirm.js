@@ -16,19 +16,21 @@ const Confirm = () => Block({
   inputs: ['disabled'],
   outputs: ['confirmation'],
   on: {
-    init: () => state => ({mode: 'disabled'}),
-    disabled: (disabled, {mode}) => {
+    'in.init': () => state => ({mode: 'disabled'}),
+    'in.disabled': (disabled, {mode} = {}) => {
       if (disabled) {
         return state => ({mode: 'disabled'})
       } else if (mode === 'disabled') {
         return state => ({mode: 'waiting'})
       }
     },
-    maybe: () => state => ({mode: 'confirm'}),
-    cancel: () => state => ({mode: 'waiting'}),
-    confirm: () => [state => ({mode: 'waiting'}), ['out.confirmation']]
+    'dom.maybe': () => state => ({mode: 'confirm'}),
+    'dom.cancel': () => state => ({mode: 'waiting'}),
+    'dom.confirm': () => [state => ({mode: 'waiting'}), 'out.confirmation']
   },
-  view: ({mode}) => mode === 'confirm' ? viewConfirm() : viewDefault(mode)
+  view: ({mode}) => ({tag: 'span',
+    content: (mode === 'confirm' ? viewConfirm() : viewDefault(mode))
+  })
 })
 
 export default Confirm

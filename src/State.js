@@ -1,48 +1,36 @@
-import {Component, Chain, Demuxer, Serializer} from 'graflow'
+import {Chain, Mapper, Filter} from 'graflow'
+import {toMessage, Message, isMessage} from './Message'
+import {isString, isObject} from './utils'
 
-const toCanonicalItem = msg => {
-  const m = typeof msg === 'string' ? [msg] : msg
-
-  const [name, payload = {}] = m
-  const [componentName, signal = 'default'] = name.split('.', 2)
-
-  if(componentName === 'out') {
-    return {outputs: {[signal]: payload}}
-  } else {
-    return {components: {[componentName]: {[signal]: payload}}}
+const messageConverter = arg => {
+  if(isString(arg)) return Message(arg)
+  if(isObject(arg)) {
+    return Object.entries(arg).map(([name, value]) => Message(name, value))
   }
 }
 
-const toCanonicalMessage = msg => [].concat(msg).map(toCanonicalItem)
+const StateComponent = initial => {
+  let state = initial
 
-const State = (options = {}) => {
-  const post = options.post
-  let state = options.initial || {}
-
-  return Component({
-    inputs: ['transformation'],
-    outputs: ['state', 'outputs', 'components'],
-    components: {
-      transform: Component((v, next) => {
-        state = v(state)
-        next(state)
-      }),
-      post: Chain(
-        Component((state, next) => {
-          if(post) next(toCanonicalMessage(post(state)))
-        }),
-        Serializer(),
-        Demuxer('outputs', 'components')
-      )
-    },
-    connections: [
-      ['in.transformation', 'transform'],
-      ['transform', 'post'],
-      ['transform', 'out.state'],
-      ['post.outputs', 'out.outputs'],
-      ['post.components', 'out.components']
-    ]
+  return Mapper(transformate => {
+    state = transformate(state)
+    return state
   })
 }
+
+const Outputs = handler => Mapper(state =>
+  toMessage({
+    'events.state': state,
+    'view.state': state,
+    ...handler(state)
+  }, messageConverter)
+)
+
+const State = (handler = () => ({}), initial = {}) => Chain(
+  Filter(v => isMessage(v) && v.blocks.includes('state')),
+  Mapper(m => m.values.default),
+  StateComponent(initial),
+  Outputs(handler)
+)
 
 export default State

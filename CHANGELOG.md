@@ -1,3 +1,7 @@
+### [0.5.0](https://github.com/pmros/cyclow/releases/tag/v0.5.0)
+
+- Big refactoring
+
 ### [0.4.0](https://github.com/pmros/cyclow/releases/tag/v0.4.0)
 
 - Snabbdom as default renderer

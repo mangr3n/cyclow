@@ -2,10 +2,10 @@ import {Block} from '../../dist/cyclow'
 import Field from './field'
 
 const Form = () => Block({
-  components: {field: Field()},
+  blocks: {field: Field()},
   on: {
-    init: () => [
-      ['field.init', 'Enter name'],
+    'in.init': () => [
+      {'field.init': 'Enter name'},
       state => ({current: 'Steve'})
     ],
     'field.submission': submission => state => ({current: submission})
