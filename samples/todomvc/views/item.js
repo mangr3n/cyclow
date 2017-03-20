@@ -1,6 +1,8 @@
+import {isDone} from '../model'
+
 const itemView = (todo, editing) => ({
   tag: 'li',
-  attrs: {className: `${todo.done ? 'completed' : ''} ${editing ? 'editing' : ''}` },
+  attrs: {class: {completed: isDone(todo), editing}},
   content: [
     {tag: 'div.view', content: [
       {tag: 'input.toggle',

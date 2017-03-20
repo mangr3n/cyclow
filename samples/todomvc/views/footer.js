@@ -6,7 +6,7 @@ const itemsLabel = n => n === 1 ? `1 item left` : `${n} items left`
 const filterButton = (name, filter, currentFilter) => ({
   tag: 'li', content: {
     tag: 'a',
-    attrs: {href: '#', className: filter === currentFilter ? 'selected' : ''},
+    attrs: {href: '#', class: {selected: filter === currentFilter}},
     on: {click: {filter}},
     content: name
   }

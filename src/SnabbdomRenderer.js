@@ -6,6 +6,7 @@ import Message from './Message'
 import snabbdom from 'snabbdom'
 import eventlisteners from 'snabbdom/modules/eventlisteners'
 import props from 'snabbdom/modules/props'
+import klass from 'snabbdom/modules/class'
 import h from 'snabbdom/h'
 
 const Event = arg => {
@@ -35,6 +36,8 @@ const toSnabbdom = vdom => {
 
   const {tag = 'div', attrs = {}, on = {}, content = [], component} = vdom
 
+  const {class: klass, ...props} = attrs
+
   const handlers = getHandlers(on, component)
 
   const hook = vdom.root
@@ -44,7 +47,7 @@ const toSnabbdom = vdom => {
     : {}
 
   return h(tag,
-    {props: attrs, on: handlers, ...hook},
+    {props, class: klass, on: handlers, ...hook},
     toSnabbdom(content))
 }
 
@@ -57,7 +60,7 @@ const updateProps = (oldVnode, vnode) => {
 const liveProps = {create: updateProps, update: updateProps}
 
 const SnabbdomRenderer = (targetId) => {
-  const patch = snabbdom.init([eventlisteners, props, liveProps])
+  const patch = snabbdom.init([eventlisteners, props, klass, liveProps])
 
   const target = targetId
     ? document.getElementById(targetId)
