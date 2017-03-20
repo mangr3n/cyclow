@@ -35,7 +35,7 @@ You can build and open [samples](samples) in a browser:
   npm run samples
 ```
 
-Samples include a [TodoMVC](http://todomvc.com) [sample](sample/todomvc).
+Samples include a [TodoMVC](http://todomvc.com) [sample](samples/todomvc).
 
 You can find even more samples at [JS Comp](http://jscomp.netlify.com) and compare them with another implementations using frameworks like React, Angular or Cycle.
 
