@@ -1,13 +1,14 @@
 import Component from 'graflow'
-import {flatten, isString, isArray, isObject, isDefined} from './utils'
-import {Message, toMessage} from './Message'
+import {isString, isArray, isObject, isDefined, isFunction,
+  flatten, mapObject} from './utils'
+import Message from './Message'
 
 import snabbdom from 'snabbdom'
 import eventlisteners from 'snabbdom/modules/eventlisteners'
 import props from 'snabbdom/modules/props'
 import h from 'snabbdom/h'
 
-const messageConverter = arg => {
+const Event = arg => {
   if(isString(arg)) return [['dom', arg, {}]]
   if(isObject(arg)) {
     return Object.entries(arg).map(([name, value]) => ['dom', name, value])
@@ -15,32 +16,31 @@ const messageConverter = arg => {
   return [['dom', 'default', arg]]
 }
 
-const getHandlers = (handlers, component) => Object.entries(handlers)
-  .reduce((acc, [event, handler]) => {
-    const send = component.send
-
+const getHandlers = (handlers, component) => mapObject(handlers,
+  (event, handler) => {
     const next = component
-      ? v => send(Message('dom', 'event', toMessage(v, messageConverter)))
+      ? v => component.send(Message('dom', 'event', Event(v)))
       : () => {}
 
-    acc[event] = e => typeof handler === 'function'
+    const newHandler = e => isFunction(handler)
       ? handler(e, next)
       : next(handler)
 
-    return acc
-  }, {})
+    return [event, newHandler]
+  })
 
 const toSnabbdom = vdom => {
   if (isString(vdom)) return vdom
   if (isArray(vdom)) return flatten(vdom).filter(isDefined).map(toSnabbdom)
 
   const {tag = 'div', attrs = {}, on = {}, content = [], component} = vdom
+
   const handlers = getHandlers(on, component)
 
-  const send = component.send
-
   const hook = vdom.root
-    ? {hook: {create: (_, vnode) => {send(Message('dom', 'node', vnode.elm))}}}
+    ? {hook: {create:
+        (_, vnode) => { component.send(Message('dom', 'node', vnode.elm)) }
+      }}
     : {}
 
   return h(tag,
@@ -48,10 +48,21 @@ const toSnabbdom = vdom => {
     toSnabbdom(content))
 }
 
-const SnabbdomRenderer = (targetId) => {
-  const patch = snabbdom.init([eventlisteners, props])
+const updateProps = (oldVnode, vnode) => {
+  if (vnode.elm.tagName === 'INPUT' && vnode.data.props.value) {
+    vnode.elm.value = vnode.data.props.value
+  }
+}
 
-  const target = targetId ? document.getElementById(targetId) : document.body
+const liveProps = {create: updateProps, update: updateProps}
+
+const SnabbdomRenderer = (targetId) => {
+  const patch = snabbdom.init([eventlisteners, props, liveProps])
+
+  const target = targetId
+    ? document.getElementById(targetId)
+    : document.body.appendChild(document.createElement('div'))
+
   let lastVdom = target
 
   return Component(vdom => {
