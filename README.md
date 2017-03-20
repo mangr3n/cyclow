@@ -27,13 +27,15 @@ This a simple counter example:
 Try it [online](http://www.webpackbin.com/VyUXX6cwM)!
 
 ## More samples
-You can build and open samples in a browser:
+You can build and open [samples](samples) in a browser:
 ```
   git clone https://github.com/pmros/cyclow
   cd cyclow
   npm install
   npm run samples
 ```
+
+Samples include a [TodoMVC](http://todomvc.com) [sample](sample/todomvc).
 
 You can find even more samples at [JS Comp](http://jscomp.netlify.com) and compare them with another implementations using frameworks like React, Angular or Cycle.
 
@@ -91,7 +93,7 @@ Returns: A [graflow] component
 ## <a name="TODO"></a> TODO
 - [x] Virtual DOM diff and patching
 - [x] A way to focus a DOM element
-- [ ] A [TodoMVC](http://todomvc.com) sample
+- [x] A [TodoMVC](http://todomvc.com) sample
 - [ ] A cool logo
 - [ ] JavaScript Standard Style
 - [ ] More documentation

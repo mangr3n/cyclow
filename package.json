@@ -1,6 +1,6 @@
 {
   "name": "cyclow",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A reactive frontend framework for JavaScript",
   "main": "dist/cyclow.js",
   "scripts": {

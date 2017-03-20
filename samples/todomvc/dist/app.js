@@ -150,7 +150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _State = __webpack_require__(14);
+				var _State = __webpack_require__(15);
 	
 				Object.defineProperty(exports, 'State', {
 					enumerable: true,
@@ -159,7 +159,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Events = __webpack_require__(15);
+				var _Events = __webpack_require__(16);
 	
 				Object.defineProperty(exports, 'Events', {
 					enumerable: true,
@@ -168,7 +168,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _View = __webpack_require__(16);
+				var _View = __webpack_require__(17);
 	
 				Object.defineProperty(exports, 'View', {
 					enumerable: true,
@@ -177,7 +177,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Block = __webpack_require__(17);
+				var _Block = __webpack_require__(18);
 	
 				Object.defineProperty(exports, 'Block', {
 					enumerable: true,
@@ -304,12 +304,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _props2 = _interopRequireDefault(_props);
 	
+				var _class = __webpack_require__(14);
+	
+				var _class2 = _interopRequireDefault(_class);
+	
 				var _h = __webpack_require__(10);
 	
 				var _h2 = _interopRequireDefault(_h);
 	
 				function _interopRequireDefault(obj) {
 					return obj && obj.__esModule ? obj : { default: obj };
+				}
+	
+				function _objectWithoutProperties(obj, keys) {
+					var target = {};for (var i in obj) {
+						if (keys.indexOf(i) >= 0) continue;if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;target[i] = obj[i];
+					}return target;
 				}
 	
 				var Event = function Event(arg) {
@@ -354,6 +364,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					    content = _vdom$content === undefined ? [] : _vdom$content,
 					    component = vdom.component;
 	
+					var klass = attrs.class,
+					    props = _objectWithoutProperties(attrs, ['class']);
+	
 					var handlers = getHandlers(on, component);
 	
 					var hook = vdom.root ? { hook: { create: function create(_, vnode) {
@@ -361,7 +374,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							}
 						} } : {};
 	
-					return (0, _h2.default)(tag, _extends({ props: attrs, on: handlers }, hook), toSnabbdom(content));
+					return (0, _h2.default)(tag, _extends({ props: props, class: klass, on: handlers }, hook), toSnabbdom(content));
 				};
 	
 				var updateProps = function updateProps(oldVnode, vnode) {
@@ -373,9 +386,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				var liveProps = { create: updateProps, update: updateProps };
 	
 				var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
-					var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, liveProps]);
+					var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _class2.default, liveProps]);
 	
-					var target = targetId ? document.getElementById(targetId) : document.body;
+					var target = targetId ? document.getElementById(targetId) : document.body.appendChild(document.createElement('div'));
+	
 					var lastVdom = target;
 	
 					return (0, _graflow2.default)(function (vdom) {
@@ -2843,6 +2857,40 @@ return /******/ (function(modules) { // webpackBootstrap
 				/***/
 			},
 			/* 14 */
+			/***/function (module, exports) {
+	
+				"use strict";
+	
+				function updateClass(oldVnode, vnode) {
+					var cur,
+					    name,
+					    elm = vnode.elm,
+					    oldClass = oldVnode.data.class,
+					    klass = vnode.data.class;
+					if (!oldClass && !klass) return;
+					if (oldClass === klass) return;
+					oldClass = oldClass || {};
+					klass = klass || {};
+					for (name in oldClass) {
+						if (!klass[name]) {
+							elm.classList.remove(name);
+						}
+					}
+					for (name in klass) {
+						cur = klass[name];
+						if (cur !== oldClass[name]) {
+							elm.classList[cur ? 'add' : 'remove'](name);
+						}
+					}
+				}
+				exports.classModule = { create: updateClass, update: updateClass };
+				Object.defineProperty(exports, "__esModule", { value: true });
+				exports.default = exports.classModule;
+				//# sourceMappingURL=class.js.map
+	
+				/***/
+			},
+			/* 15 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -2940,7 +2988,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 15 */
+			/* 16 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3048,7 +3096,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 16 */
+			/* 17 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3133,7 +3181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 17 */
+			/* 18 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3152,39 +3200,39 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				};
 	
-				var _BusBlock = __webpack_require__(18);
+				var _BusBlock = __webpack_require__(19);
 	
 				var _BusBlock2 = _interopRequireDefault(_BusBlock);
 	
-				var _Bus = __webpack_require__(19);
+				var _Bus = __webpack_require__(20);
 	
 				var _Bus2 = _interopRequireDefault(_Bus);
 	
-				var _Inputs = __webpack_require__(20);
+				var _Inputs = __webpack_require__(21);
 	
 				var _Inputs2 = _interopRequireDefault(_Inputs);
 	
-				var _Outputs = __webpack_require__(21);
+				var _Outputs = __webpack_require__(22);
 	
 				var _Outputs2 = _interopRequireDefault(_Outputs);
 	
-				var _State = __webpack_require__(14);
+				var _State = __webpack_require__(15);
 	
 				var _State2 = _interopRequireDefault(_State);
 	
-				var _Events = __webpack_require__(15);
+				var _Events = __webpack_require__(16);
 	
 				var _Events2 = _interopRequireDefault(_Events);
 	
-				var _View = __webpack_require__(16);
+				var _View = __webpack_require__(17);
 	
 				var _View2 = _interopRequireDefault(_View);
 	
-				var _Dom = __webpack_require__(22);
+				var _Dom = __webpack_require__(23);
 	
 				var _Dom2 = _interopRequireDefault(_Dom);
 	
-				var _CustomBlocks = __webpack_require__(23);
+				var _CustomBlocks = __webpack_require__(24);
 	
 				var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
 	
@@ -3229,7 +3277,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 18 */
+			/* 19 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3274,7 +3322,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 19 */
+			/* 20 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3297,7 +3345,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 20 */
+			/* 21 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3358,7 +3406,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 21 */
+			/* 22 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3383,7 +3431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 22 */
+			/* 23 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3428,7 +3476,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 23 */
+			/* 24 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3829,17 +3877,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 8 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	
+	var _model = __webpack_require__(4);
+	
 	var itemView = function itemView(todo, editing) {
 	  return {
 	    tag: 'li',
-	    attrs: { className: (todo.done ? 'completed' : '') + ' ' + (editing ? 'editing' : '') },
+	    attrs: { class: { completed: (0, _model.isDone)(todo), editing: editing } },
 	    content: [{ tag: 'div.view', content: [{ tag: 'input.toggle',
 	        attrs: { type: 'checkbox', checked: todo.done },
 	        on: { change: { toggle: todo.id } } }, { tag: 'label', content: todo.name,
@@ -3889,7 +3940,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  return {
 	    tag: 'li', content: {
 	      tag: 'a',
-	      attrs: { href: '#', className: filter === currentFilter ? 'selected' : '' },
+	      attrs: { href: '#', class: { selected: filter === currentFilter } },
 	      on: { click: { filter: filter } },
 	      content: name
 	    }

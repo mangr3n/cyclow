@@ -1,3 +1,8 @@
+### [0.5.1](https://github.com/pmros/cyclow/releases/tag/v0.5.1)
+
+- TodoMVC sample
+- SnabbdomRenderer fixes
+
 ### [0.5.0](https://github.com/pmros/cyclow/releases/tag/v0.5.0)
 
 - Big refactoring

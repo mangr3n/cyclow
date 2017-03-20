@@ -78,7 +78,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _State = __webpack_require__(14);
+	var _State = __webpack_require__(15);
 	
 	Object.defineProperty(exports, 'State', {
 	  enumerable: true,
@@ -87,7 +87,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _Events = __webpack_require__(15);
+	var _Events = __webpack_require__(16);
 	
 	Object.defineProperty(exports, 'Events', {
 	  enumerable: true,
@@ -96,7 +96,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _View = __webpack_require__(16);
+	var _View = __webpack_require__(17);
 	
 	Object.defineProperty(exports, 'View', {
 	  enumerable: true,
@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _Block = __webpack_require__(17);
+	var _Block = __webpack_require__(18);
 	
 	Object.defineProperty(exports, 'Block', {
 	  enumerable: true,
@@ -180,6 +180,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Message = __webpack_require__(5);
 	
+	var _Message2 = _interopRequireDefault(_Message);
+	
 	var _snabbdom = __webpack_require__(6);
 	
 	var _snabbdom2 = _interopRequireDefault(_snabbdom);
@@ -192,13 +194,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _props2 = _interopRequireDefault(_props);
 	
+	var _class = __webpack_require__(14);
+	
+	var _class2 = _interopRequireDefault(_class);
+	
 	var _h = __webpack_require__(10);
 	
 	var _h2 = _interopRequireDefault(_h);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var messageConverter = function messageConverter(arg) {
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+	
+	var Event = function Event(arg) {
 	  if ((0, _utils.isString)(arg)) return [['dom', arg, {}]];
 	  if ((0, _utils.isObject)(arg)) {
 	    return Object.entries(arg).map(function (_ref) {
@@ -213,23 +221,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	var getHandlers = function getHandlers(handlers, component) {
-	  return Object.entries(handlers).reduce(function (acc, _ref3) {
-	    var _ref4 = _slicedToArray(_ref3, 2),
-	        event = _ref4[0],
-	        handler = _ref4[1];
-	
-	    var send = component.send;
-	
+	  return (0, _utils.mapObject)(handlers, function (event, handler) {
 	    var next = component ? function (v) {
-	      return send((0, _Message.Message)('dom', 'event', (0, _Message.toMessage)(v, messageConverter)));
+	      return component.send((0, _Message2.default)('dom', 'event', Event(v)));
 	    } : function () {};
 	
-	    acc[event] = function (e) {
-	      return typeof handler === 'function' ? handler(e, next) : next(handler);
+	    var newHandler = function newHandler(e) {
+	      return (0, _utils.isFunction)(handler) ? handler(e, next) : next(handler);
 	    };
 	
-	    return acc;
-	  }, {});
+	    return [event, newHandler];
+	  });
 	};
 	
 	var toSnabbdom = function toSnabbdom(vdom) {
@@ -246,21 +248,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	      content = _vdom$content === undefined ? [] : _vdom$content,
 	      component = vdom.component;
 	
+	  var klass = attrs.class,
+	      props = _objectWithoutProperties(attrs, ['class']);
+	
 	  var handlers = getHandlers(on, component);
 	
-	  var send = component.send;
-	
 	  var hook = vdom.root ? { hook: { create: function create(_, vnode) {
-	        send((0, _Message.Message)('dom', 'node', vnode.elm));
-	      } } } : {};
+	        component.send((0, _Message2.default)('dom', 'node', vnode.elm));
+	      }
+	    } } : {};
 	
-	  return (0, _h2.default)(tag, _extends({ props: attrs, on: handlers }, hook), toSnabbdom(content));
+	  return (0, _h2.default)(tag, _extends({ props: props, class: klass, on: handlers }, hook), toSnabbdom(content));
 	};
 	
-	var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
-	  var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default]);
+	var updateProps = function updateProps(oldVnode, vnode) {
+	  if (vnode.elm.tagName === 'INPUT' && vnode.data.props.value) {
+	    vnode.elm.value = vnode.data.props.value;
+	  }
+	};
 	
-	  var target = targetId ? document.getElementById(targetId) : document.body;
+	var liveProps = { create: updateProps, update: updateProps };
+	
+	var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
+	  var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _class2.default, liveProps]);
+	
+	  var target = targetId ? document.getElementById(targetId) : document.body.appendChild(document.createElement('div'));
+	
 	  var lastVdom = target;
 	
 	  return (0, _graflow2.default)(function (vdom) {
@@ -2424,6 +2437,36 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 14 */
+/***/ function(module, exports) {
+
+	"use strict";
+	function updateClass(oldVnode, vnode) {
+	    var cur, name, elm = vnode.elm, oldClass = oldVnode.data.class, klass = vnode.data.class;
+	    if (!oldClass && !klass)
+	        return;
+	    if (oldClass === klass)
+	        return;
+	    oldClass = oldClass || {};
+	    klass = klass || {};
+	    for (name in oldClass) {
+	        if (!klass[name]) {
+	            elm.classList.remove(name);
+	        }
+	    }
+	    for (name in klass) {
+	        cur = klass[name];
+	        if (cur !== oldClass[name]) {
+	            elm.classList[cur ? 'add' : 'remove'](name);
+	        }
+	    }
+	}
+	exports.classModule = { create: updateClass, update: updateClass };
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = exports.classModule;
+	//# sourceMappingURL=class.js.map
+
+/***/ },
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2488,7 +2531,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = State;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2571,7 +2614,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Events;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2643,7 +2686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = View;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2654,39 +2697,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _BusBlock = __webpack_require__(18);
+	var _BusBlock = __webpack_require__(19);
 	
 	var _BusBlock2 = _interopRequireDefault(_BusBlock);
 	
-	var _Bus = __webpack_require__(19);
+	var _Bus = __webpack_require__(20);
 	
 	var _Bus2 = _interopRequireDefault(_Bus);
 	
-	var _Inputs = __webpack_require__(20);
+	var _Inputs = __webpack_require__(21);
 	
 	var _Inputs2 = _interopRequireDefault(_Inputs);
 	
-	var _Outputs = __webpack_require__(21);
+	var _Outputs = __webpack_require__(22);
 	
 	var _Outputs2 = _interopRequireDefault(_Outputs);
 	
-	var _State = __webpack_require__(14);
+	var _State = __webpack_require__(15);
 	
 	var _State2 = _interopRequireDefault(_State);
 	
-	var _Events = __webpack_require__(15);
+	var _Events = __webpack_require__(16);
 	
 	var _Events2 = _interopRequireDefault(_Events);
 	
-	var _View = __webpack_require__(16);
+	var _View = __webpack_require__(17);
 	
 	var _View2 = _interopRequireDefault(_View);
 	
-	var _Dom = __webpack_require__(22);
+	var _Dom = __webpack_require__(23);
 	
 	var _Dom2 = _interopRequireDefault(_Dom);
 	
-	var _CustomBlocks = __webpack_require__(23);
+	var _CustomBlocks = __webpack_require__(24);
 	
 	var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
 	
@@ -2724,7 +2767,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Block;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2760,7 +2803,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = BusBlock;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2782,7 +2825,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Bus;
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2816,7 +2859,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Inputs;
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2840,7 +2883,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Outputs;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2884,7 +2927,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Dom;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
