@@ -24,7 +24,7 @@ This a simple counter example:
   run(Counter)
 ```
 
-Try it [online](http://www.webpackbin.com/VyUXX6cwM)!
+Try it [online](https://www.webpackbin.com/bins/-KfjSQySgAHAD0jGjjs3)!
 
 ## More samples
 You can build and open [samples](samples) in a browser:
@@ -37,7 +37,7 @@ You can build and open [samples](samples) in a browser:
 
 Samples include a [TodoMVC](http://todomvc.com) [sample](samples/todomvc).
 
-You can find even more samples at [JS Comp](http://jscomp.netlify.com) and compare them with another implementations using frameworks like React, Angular or Cycle.
+You can find even more samples at [JS Comp] and compare them with another implementations using frameworks like React, Angular or Cycle.
 
 ## Why cyclow?
 There are many JavaScript frameworks so... why another one? Well I really like [Cycle.js]. It's a nice reactive framework. [TSERS] is like [Cycle.js] and it adds a simple state manager and another features. But both are too [pure](https://en.wikipedia.org/wiki/Pure_function) (in the functional programmming sense) for me.
@@ -103,4 +103,4 @@ Returns: A [graflow] component
 [graflow]: https://github.com/pmros/graflow
 [Cycle.js]: https://cycle.js.org
 [TSERS]: https://github.com/tsers-js/core
-[JS Comp]: http://blog.krawaller.se/jscomp
+[JS Comp]: http://jscomp.netlify.com/
