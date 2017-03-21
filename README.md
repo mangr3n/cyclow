@@ -1,4 +1,4 @@
-# cyclow
+![cyclow logo](https://rawgit.com/pmros/cyclow/master/cyclow.svg)
 
 [![npm version](https://badge.fury.io/js/cyclow.svg)](https://badge.fury.io/js/cyclow)
 
@@ -94,7 +94,7 @@ Returns: A [graflow] component
 - [x] Virtual DOM diff and patching
 - [x] A way to focus a DOM element
 - [x] A [TodoMVC](http://todomvc.com) sample
-- [ ] A cool logo
+- [x] A cool logo
 - [ ] JavaScript Standard Style
 - [ ] More documentation
 - [ ] More samples
