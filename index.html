@@ -4,13 +4,58 @@
   <meta charset="utf-8">
   <title>Cyclow</title>
   <meta name="description" content="Cyclow website">
-  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/agate.min.css">
+  <script src="js/example.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 </head>
 <body>
   <header>
-    <img id="logo" src="cyclow.svg" alt="Cyclow logo">
-    <h2>A reactive frontend framework for JavaScript</h2>
+    <div>
+      <img id="logo" src="cyclow.svg" alt="Cyclow logo">
+      <h2>A reactive frontend framework for JavaScript</h2>
+    </div>
   </header>
+  <section class="example">
+    <div>
+      <div class="code">
+        <pre><code class="javascript">
+import {Block, run} from 'cyclow'
+
+const Counter = () => Block({
+  on: {
+    'in.init':  () => counter => 0,
+    'dom.increment': () => counter => counter + 1,
+    'dom.decrement': () => counter => counter - 1
+  },
+  view: counter => ({tag:'div#app', content: [
+    {tag: 'div.counter', content: `${counter}`},
+    {tag: 'div.buttons', content: [
+      {tag: 'button', on: {click: 'decrement'}, content: '-'},
+      {tag: 'button', on: {click: 'increment'}, content: '+'}
+    ]}
+  ]})
+})
+
+run(Counter, {target: 'app'})
+        </code></pre>
+      </div>
+      <div id="app"></div>
+    </div>
+  </section>
+  <footer>
+    <div class="github">
+      <div class="text">For more examples and documentation</div>
+      <div class="button">
+        <a href="https://github.com/pmros/cyclow">
+          <span>View on GitHub </span>
+          <span class="octicon octicon-mark-github"></span>
+        </a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
