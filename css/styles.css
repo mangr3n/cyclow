@@ -115,7 +115,7 @@ header #logo:nth-child(1n), header h2:nth-child(1n) { margin-right: 0; margin-le
   margin: 0;
 }
 
-.example #app {
+#app {
   -webkit-box-flex: 0;
       -ms-flex-positive: 0;
           flex-grow: 0;
@@ -129,11 +129,11 @@ header #logo:nth-child(1n), header h2:nth-child(1n) { margin-right: 0; margin-le
   color: #222;
 }
 
-.example #app:nth-child(1n) { margin-right: 30px; margin-left: 0; }
+#app:nth-child(1n) { margin-right: 30px; margin-left: 0; }
 
-.example #app:last-child { margin-right: 0; }
+#app:last-child { margin-right: 0; }
 
-.example #app:nth-child(1n) { margin-right: 0; margin-left: auto; }
+#app:nth-child(1n) { margin-right: 0; margin-left: auto; }
 
 @media (min-width: 960px) {
   #app {
@@ -151,16 +151,16 @@ header #logo:nth-child(1n), header h2:nth-child(1n) { margin-right: 0; margin-le
   #app:nth-child(3n) { margin-right: 0; margin-left: auto; }
 }
 
-.example #app .counter {
+#app .counter {
   margin-bottom: 10px;
   font-size: 100px;
 }
 
-.example #app .buttons {
+#app .buttons {
   height: auto;
 }
 
-.example #app .buttons button {
+#app .buttons button {
   margin: 0 10px;
   font-size: 30px;
   font-weight: bold;
@@ -168,7 +168,7 @@ header #logo:nth-child(1n), header h2:nth-child(1n) { margin-right: 0; margin-le
   width: 50px;
 }
 
-.example #app > div {
+#app > div {
   width: 100%;
   -webkit-box-flex: 0;
       -ms-flex: 0 0 auto;
@@ -180,9 +180,9 @@ header #logo:nth-child(1n), header h2:nth-child(1n) { margin-right: 0; margin-le
   display: flex;
 }
 
-.example #app > div:last-child { margin-bottom: 0; }
+#app > div:last-child { margin-bottom: 0; }
 
-.example #app > div { -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+#app > div { -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
 
 
 footer {
