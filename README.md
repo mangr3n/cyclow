@@ -1,7 +1,9 @@
 <p align="center">
-![cyclow logo](https://rawgit.com/pmros/cyclow/master/cyclow.svg)
+  <img alt="logo" src="https://rawgit.com/pmros/cyclow/master/cyclow.svg">
+</p>
 
-[![npm version](https://badge.fury.io/js/cyclow.svg)](https://badge.fury.io/js/cyclow)
+<p align="center">
+<a href="https://badge.fury.io/js/cyclow" class="rich-diff-level-one"><img alt="npm version" src="https://badge.fury.io/js/cyclow.svg" style="max-width:100%;"></a>
 </p>
 
 **cyclow**  is a reactive frontend framework for JavaScript. It's inspired by another frameworks like [Cycle.js] and [TSERS]. It uses [graflow] as stream library.
