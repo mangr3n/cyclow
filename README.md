@@ -1,6 +1,8 @@
+<p align="center">
 ![cyclow logo](https://rawgit.com/pmros/cyclow/master/cyclow.svg)
 
 [![npm version](https://badge.fury.io/js/cyclow.svg)](https://badge.fury.io/js/cyclow)
+</p>
 
 **cyclow**  is a reactive frontend framework for JavaScript. It's inspired by another frameworks like [Cycle.js] and [TSERS]. It uses [graflow] as stream library.
 
@@ -50,6 +52,116 @@ With **cyclow** instead of thinking in a big global model and pure functions, yo
 - Easy to read
 - Scalable
 
+## How it works
+A cyclow app consits of a block. A block is composed of other blocks. A block is [graflow] component, it receives messages and send messages async.
+
+Every block contains this **default blocks**:
+- `in`
+- `events`
+- `state`
+- `view`
+- `dom`
+- `out`
+
+In adition, you can add your own blocks or **custom blocks** with `blocks` [Block](#Block) option.
+
+Every block inside a block is connected through a `bus` block, sending and receiving messages. Bus connect blocks forming a cycle.
+
+**Messages** has three parts:
+- Block
+- Signal
+- Value
+
+You can handle messages with `on` [Block](#Block) option.
+
+Finally, you can transform state into a [Virtual DOM Element](#virtual-dom-element) with `view` [Block](#Block) option. Virtual DOM Element will be converted into a real DOM by the [renderer](#renderer).
+
+## How To
+
+### How to set the initial state?
+At the beginning, every block receives an `init` signal from `in` block. So you can handle this message to set a initial state.
+
+From the counter example:
+```js
+  on: {
+    'in.init': () => state => 0
+  }
+```
+
+In this case, the handler takes no params `()` and returns a **state transformation** `state => 0`. It's a function that takes the current state and returns the next state.
+
+
+### How to handle DOM events?
+First, you have to catch the DOM event in `view` [Block](#Block) option. From counter exaple:
+```js
+  view: state => ({
+    tag: 'button',
+    on: {click: 'click'},
+    content: `Count: ${state}`
+  })
+```
+
+Then, you can handle DOM event as a normal block message (from `dom` block):
+```js
+  on: {
+    'dom.click': () => state => state + 1
+  }
+```
+
+If you need DOM event information, see [Inputbox sample](samples/inputbox):
+```js
+on: {
+  ...
+  'dom.text': newText => text => newText,
+},
+view: text => ({content: [
+  {tag: 'input',
+    attrs: {id: 'myInput', value: text},
+    on: {keyup: (e, next) => next({text: e.target.value})}
+  }
+  ...
+]})
+```
+
+### How to compose blocks?
+See [Composition sample](samples/composition):
+```js
+  blocks: {field: Field()},
+  on: {
+    'in.init': () => [{'field.init': 'Enter name'}, state => ({current: 'Steve'})],
+    'field.submission': submission => state => ({current: submission})
+  }
+```
+
+### How to focus a DOM element?
+See [Inputbox sample](samples/inputbox):
+```js
+  on: {
+    'dom.focus': () => ({'dom.action': node => node.firstElementChild.focus()})
+  }
+```
+
+### How to use LocalStorage to save the state?
+See [TodoMVC sample](samples/todomvc):
+```js
+  on: {
+    'in.init': () => state => JSON.parse(localStorage.getItem('todomvc')) || initial(),
+    state: state => { localStorage.setItem('todomvc', JSON.stringify(state)) }
+  }
+```
+
+### How to debug a cyclow app?
+You can log every message through `bus` block:
+```js
+  on: {
+    bus: msg => {
+      console.log('Message', msg)
+      return msg
+    }
+  }
+```
+
+
 ## <a name="virtual-dom-element"></a>Virtual DOM Element
 cyclow represents DOM elements as Virtual DOM Elements, that is a simple Javascript object with the following (optional) properties:
 - `tag`: HTML tag (default is `div`)
@@ -69,7 +181,7 @@ This is a virtual DOM element example:
 ## <a name="renderer"></a> Renderer
 A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as a input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
 
-A renderer is a function that it takes `target`, that the DOM element id where you want to instert into the Virtual DOM Element. By default `target` is `body` document.
+A renderer is a function that it takes `target`, that the DOM element id where you want to insert into the Virtual DOM Element. If you don't specify `target`, cyclow will append the app at the end of body.
 
 ## API
 
