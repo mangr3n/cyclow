@@ -4,13 +4,13 @@
 
 <p align="center">
 <a href="https://badge.fury.io/js/cyclow" class="rich-diff-level-one"><img alt="npm version" src="https://badge.fury.io/js/cyclow.svg" style="max-width:100%;"></a>
+<a href="https://gitter.im/cyclow/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img alt="Join the chat at https://gitter.im/cyclow/Lobby" src="https://badges.gitter.im/cyclow/Lobby.svg"></a>
 </p>
 
 **cyclow**  is a reactive frontend framework for JavaScript. It's inspired by another frameworks like [Cycle.js] and [TSERS]. It uses [graflow] as stream library.
 
 ## Example
 
-[![Join the chat at https://gitter.im/cyclow/Lobby](https://badges.gitter.im/cyclow/Lobby.svg)](https://gitter.im/cyclow/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This a simple counter example:
 ```js
   import { Block, run } from 'cyclow'
