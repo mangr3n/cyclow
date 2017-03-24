@@ -9,6 +9,8 @@
 **cyclow**  is a reactive frontend framework for JavaScript. It's inspired by another frameworks like [Cycle.js] and [TSERS]. It uses [graflow] as stream library.
 
 ## Example
+
+[![Join the chat at https://gitter.im/cyclow/Lobby](https://badges.gitter.im/cyclow/Lobby.svg)](https://gitter.im/cyclow/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This a simple counter example:
 ```js
   import { Block, run } from 'cyclow'
