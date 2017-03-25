@@ -2291,7 +2291,9 @@ return /******/ (function(modules) { // webpackBootstrap
 							var elm = vnode.elm = isDef(data) && isDef(i = data.ns) ? api.createElementNS(i, tag) : api.createElement(tag);
 							if (hash < dot) elm.id = sel.slice(hash + 1, dot);
 							if (dotIdx > 0) elm.className = sel.slice(dot + 1).replace(/\./g, ' ');
-							if (is.array(children)) {
+							for (i = 0; i < cbs.create.length; ++i) {
+								cbs.create[i](emptyNode, vnode);
+							}if (is.array(children)) {
 								for (i = 0; i < children.length; ++i) {
 									var ch = children[i];
 									if (ch != null) {
@@ -2301,9 +2303,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							} else if (is.primitive(vnode.text)) {
 								api.appendChild(elm, api.createTextNode(vnode.text));
 							}
-							for (i = 0; i < cbs.create.length; ++i) {
-								cbs.create[i](emptyNode, vnode);
-							}i = vnode.data.hook; // Reuse variable
+							i = vnode.data.hook; // Reuse variable
 							if (isDef(i)) {
 								if (i.create) i.create(emptyNode, vnode);
 								if (i.insert) insertedVnodeQueue.push(vnode);
