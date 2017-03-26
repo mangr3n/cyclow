@@ -369,7 +369,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					var handlers = getHandlers(on, component);
 	
-					var hook = vdom.root ? { hook: { create: function create(_, vnode) {
+					var hook = vdom.root ? { hook: { update: function update(_, vnode) {
 								component.send((0, _Message2.default)('dom', 'node', vnode.elm));
 							}
 						} } : {};

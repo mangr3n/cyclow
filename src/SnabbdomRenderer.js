@@ -41,7 +41,7 @@ const toSnabbdom = vdom => {
   const handlers = getHandlers(on, component)
 
   const hook = vdom.root
-    ? {hook: {create:
+    ? {hook: {update:
         (_, vnode) => { component.send(Message('dom', 'node', vnode.elm)) }
       }}
     : {}

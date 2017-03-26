@@ -1,3 +1,6 @@
+### [0.5.3](https://github.com/pmros/cyclow/releases/tag/v0.5.3)
+- Fix issue with SnabbdomRenderer
+
 ### [0.5.2](https://github.com/pmros/cyclow/releases/tag/v0.5.2)
 - Hot fix
 

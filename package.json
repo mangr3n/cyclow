@@ -1,6 +1,6 @@
 {
   "name": "cyclow",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A reactive frontend framework for JavaScript",
   "main": "dist/cyclow.js",
   "scripts": {
@@ -34,7 +34,7 @@
     "gulp-filter": "4.0.0",
     "gulp-istanbul": "1.1.1",
     "gulp-livereload": "3.8.1",
-    "gulp-load-plugins": "1.2.4",
+    "gulp-load-plugins": "^1.2.4",
     "gulp-mocha": "3.0.1",
     "gulp-open": "^2.0.0",
     "gulp-plumber": "1.1.0",
