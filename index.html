@@ -1,50 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8">
+    <title>Cyclow</title>
+    <meta name="description" content="Cyclow is a new reactive frontend framework for JavaScript">
+    <meta name="keywords" content="reactive, framework, frontend, JavaScript">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="/img/favicon16.png" sizes="16x16">
+    <link rel="shortcut icon" type="image/png" href="/img/favicon128.png" sizes="128x128">
+    <link rel="shortcut icon" type="image/png" href="/img/favicon32.png" sizes="32x32">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/agate.min.css">
+    <script src="js/example.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-  <title>Cyclow</title>
-  <meta name="description" content="Cyclow is a new reactive frontend framework for JavaScript">
-  <meta name="keywords" content="reactive, framework, frontend, JavaScript">
+ga('create', 'UA-96114699-1', 'auto');
+ga('send', 'pageview');
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="shortcut icon" type="image/png" href="/img/favicon16.png" sizes="16x16">
-  <link rel="shortcut icon" type="image/png" href="/img/favicon128.png" sizes="128x128">
-  <link rel="shortcut icon" type="image/png" href="/img/favicon32.png" sizes="32x32">
-
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/styles/agate.min.css">
-  <script src="js/example.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.10.0/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-96114699-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
-</head>
-<body>
-  <header>
-    <div>
-      <h1>
-        <img id="logo" src="cyclow.svg" alt="Cyclow">
-      </h1>
-      <h2>A reactive frontend framework for JavaScript</h2>
-    </div>
-  </header>
-  <section class="example">
-    <div>
-      <div class="code">
-        <pre><code class="javascript">
-import {Block, run} from 'cyclow'
+    </script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1><img id="logo" src="cyclow.svg" alt="Cyclow"></h1>
+        <h2>A reactive frontend framework for JavaScript</h2>
+      </div>
+    </header>
+    <section class="example">
+      <div>
+        <div class="code">
+          <pre><code class="javascript">import {Block, run} from 'cyclow'
 
 const Counter = () => Block({
   on: {
@@ -62,21 +54,50 @@ const Counter = () => Block({
 })
 
 run(Counter, {target: 'app'})
-        </code></pre>
+</code></pre>
+        </div>
+        <div id="app"></div>
       </div>
-      <div id="app"></div>
-    </div>
-  </section>
-  <footer>
-    <div class="github">
-      <div class="text">For more examples and documentation</div>
-      <div class="button">
-        <a href="https://github.com/pmros/cyclow">
-          <span>View on GitHub </span>
-          <span class="octicon octicon-mark-github"></span>
-        </a>
+    </section>
+    <section class="info">
+      <div>
+        <h3>Why another JavaScript framework?</h3>
+        <p>Well, I really like <a href="https://cycle.js.org">Cycle.js</a>. 
+          It's a nice reactive framework. 
+          But it's too <a href="https://en.wikipedia.org/wiki/Pure_function">pure</a> for me. 
+        </p>
+        <p>With <strong>Cyclow</strong>, instead of thinking in a big global model and pure functions, 
+          you have to think in interconnected <em>components</em> with async inputs/outputs and their own state. 
+          It's something like an electronic circuit, where you can wire up electronic components. 
+          Cyclow aims to be more intuitive and easier while it's still reactive and quite declarative.
+        </p>
       </div>
-    </div>
-  </footer>
-</body>
+    </section>
+    <section class="features">
+      <div>
+        <div>
+          <h4>Reactive</h4>
+          <p>Powered by <a href="https://github.com/pmros/graflow">Graflow</a>, a graph stream library</p>
+        </div>
+        <div>
+          <h4>Scalable</h4>
+          <p>Build your apps connecting components</p>
+        </div>
+        <div> 
+          <h4>Fast</h4>
+          <p>Powered by <a href="https://github.com/snabbdom/snabbdom">Snabbdom</a>, a virtual DOM library with a great performance</p>
+        </div>
+        <div> 
+          <h4>Light</h4>
+          <p>The whole framework weights less than <strong>10 kb</strong> (minimified and gzipped)</p>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <div class="github">
+        <div class="text">For more examples and documentation</div>
+        <div class="button"><a href="https://github.com/pmros/cyclow"><span>View on GitHub <span class="octicon octicon-mark-github"></span></span></a></div>
+      </div>
+    </footer>
+  </body>
 </html>

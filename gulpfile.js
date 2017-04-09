@@ -1,26 +1,36 @@
 var gulp = require('gulp'),
     postcss = require('gulp-postcss'),
+    pug = require('gulp-pug'),
+    minimify = require('gulp-uglify'),
     sourcemaps = require('gulp-sourcemaps'),
     autoprefixer = require('autoprefixer'),
     lost = require('lost'),
     webpack = require('webpack'),
-    webpackStream = require('webpack-stream');
+    webpackStream = require('webpack-stream')
 
 var paths = {
-  cssSource: 'src/css/',
-  cssDestination: 'css/'
-};
+  cssSource: 'src/css/**/*.css',
+  cssDestination: 'css/',
+  htmlSource: 'src/pug/*.pug',
+  htmlDestination: './'
+}
+
+gulp.task('html', function() {
+  return gulp.src(paths.htmlSource)
+    .pipe(pug({pretty: true}))
+    .pipe(gulp.dest(paths.htmlDestination))
+})
 
 gulp.task('styles', function() {
-  return gulp.src(paths.cssSource + '**/*.css')
+  return gulp.src(paths.cssSource)
     .pipe(sourcemaps.init())
     .pipe(postcss([
       lost(),
       autoprefixer()
     ]))
     .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest(paths.cssDestination));
-});
+    .pipe(gulp.dest(paths.cssDestination))
+})
 
 gulp.task('example', function() {
   return gulp.src('src/js/example/example.js')
@@ -41,7 +51,8 @@ gulp.task('example', function() {
         ]
       }
     }))
-    .pipe(gulp.dest('js'));
+    .pipe(minimify())
+    .pipe(gulp.dest('js'))
 })
 
-gulp.task('default', ['styles', 'example']);
+gulp.task('default', ['html', 'styles', 'example'])

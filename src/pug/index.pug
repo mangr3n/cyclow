@@ -1,0 +1,47 @@
+doctype html
+html(lang='en')
+  head
+    include includes/head.pug
+  body
+    header
+      div
+        h1: img#logo(src='cyclow.svg' alt='Cyclow')
+        h2 A reactive frontend framework for JavaScript
+    section.example
+      div
+        .code
+          pre: code.javascript
+            include ../js/example/example.js
+        #app
+    section.info
+      div
+        h3 Why another JavaScript framework?
+        p.
+          Well, I really like #[a(href='https://cycle.js.org') Cycle.js]. 
+          It's a nice reactive framework. 
+          But it's too #[a(href='https://en.wikipedia.org/wiki/Pure_function') pure] for me. 
+        p.
+          With #[strong Cyclow], instead of thinking in a big global model and pure functions, 
+          you have to think in interconnected #[em components] with async inputs/outputs and their own state. 
+          It's something like an electronic circuit, where you can wire up electronic components. 
+          Cyclow aims to be more intuitive and easier while it's still reactive and quite declarative.
+    section.features
+      div
+        div
+          h4 Reactive
+          p Powered by #[a(href='https://github.com/pmros/graflow') Graflow], a graph stream library
+        div
+          h4 Scalable
+          p Build your apps connecting components
+        div 
+          h4 Fast
+          p Powered by #[a(href='https://github.com/snabbdom/snabbdom') Snabbdom], a virtual DOM library with a great performance
+        div 
+          h4 Light
+          p The whole framework weights less than #[strong 10 kb] (minimified and gzipped)
+    footer
+      .github
+        .text For more examples and documentation
+        .button
+          a(href='https://github.com/pmros/cyclow')
+            span View on GitHub #[span.octicon.octicon-mark-github]
