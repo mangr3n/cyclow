@@ -165,6 +165,12 @@ You can log every message through `bus` block:
   }
 ```
 
+You can track state changes too:
+```js
+  on: {
+    state: state => console.log('State', state)
+  }
+```
 
 ## <a name="virtual-dom-element"></a>Virtual DOM Element
 cyclow represents DOM elements as Virtual DOM Elements, that is a simple Javascript object with the following (optional) properties:
