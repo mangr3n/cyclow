@@ -67,7 +67,7 @@ Every block contains this **default blocks**:
 - `dom`
 - `out`
 
-In adition, you can add your own blocks or **custom blocks** with `blocks` [Block](#Block) option.
+In addition, you can add your own blocks or **custom blocks** with `blocks` [Block](#Block) option.
 
 Every block inside a block is connected through a `bus` block, sending and receiving messages. Bus connect blocks forming a cycle.
 
@@ -96,7 +96,7 @@ In this case, the handler takes no params `()` and returns a **state transformat
 
 
 ### How to handle DOM events?
-First, you have to catch the DOM event in `view` [Block](#Block) option. From counter exaple:
+First, you have to catch the DOM event in `view` [Block](#Block) option. From counter example:
 ```js
   view: state => ({
     tag: 'button',
@@ -189,7 +189,7 @@ This is a virtual DOM element example:
 ```
 
 ## <a name="renderer"></a> Renderer
-A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as a input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
+A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as an input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
 
 A renderer is a function that it takes `target`, that the DOM element id where you want to insert into the Virtual DOM Element. If you don't specify `target`, cyclow will append the app at the end of body.
 
