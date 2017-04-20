@@ -4,6 +4,7 @@
 
 <p align="center">
 <a href="https://badge.fury.io/js/cyclow" class="rich-diff-level-one"><img alt="npm version" src="https://badge.fury.io/js/cyclow.svg" style="max-width:100%;"></a>
+<a href="https://travis-ci.org/pmros/cyclow"><img src="https://travis-ci.org/pmros/cyclow.svg?branch=master" alt="Build Status"></a>
 <a href="https://gitter.im/cyclow/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img alt="Join the chat at https://gitter.im/cyclow/Lobby" src="https://badges.gitter.im/cyclow/Lobby.svg"></a>
 </p>
 
