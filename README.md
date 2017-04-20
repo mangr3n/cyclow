@@ -218,9 +218,10 @@ Returns: A [graflow] component
 - [x] A [TodoMVC](http://todomvc.com) sample
 - [x] A cool logo
 - [ ] JavaScript Standard Style
+- [ ] A contributing guide
+- [ ] More e2e tests
 - [ ] More documentation
 - [ ] More samples
-- [ ] Functional tests
 
 [graflow]: https://github.com/pmros/graflow
 [Cycle.js]: https://cycle.js.org
