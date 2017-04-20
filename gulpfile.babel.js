@@ -1,18 +1,22 @@
-const gulp = require('gulp');
-const loadPlugins = require('gulp-load-plugins');
-const del = require('del');
-const glob = require('glob');
-const path = require('path');
-const isparta = require('isparta');
-const webpack = require('webpack');
-const webpackStream = require('webpack-stream');
-const Instrumenter = isparta.Instrumenter;
-const mochaGlobals = require('./test/setup/.globals');
-const manifest = require('./package.json');
-const open = require('gulp-open');
+import gulp from 'gulp'
+import loadPlugins from 'gulp-load-plugins'
+import del from 'del'
+import glob from 'glob'
+import path from 'path'
+import {Instrumenter} from 'isparta'
+import webpack from 'webpack'
+import webpackStream from 'webpack-stream'
+import mochaGlobals from './test/setup/.globals'
+import manifest from './package.json'
+import open from 'gulp-open'
+import http from 'http'
+import connect from 'connect'
+import serveStatic from 'serve-static'
+import selenium from 'selenium-standalone'
+import webdriver from 'gulp-webdriver'
 
-var merge = require('merge-stream');
-var fs = require('fs');
+import merge from 'merge-stream'
+import fs from 'fs'
 
 // Load all of our Gulp plugins
 const $ = loadPlugins();
@@ -22,6 +26,47 @@ const config = manifest.babelBoilerplateOptions;
 const mainFile = manifest.main;
 const destinationFolder = path.dirname(mainFile);
 const exportFileName = path.basename(mainFile, path.extname(mainFile));
+
+let httpServer
+
+gulp.task('http', done => {
+  const app = connect().use(serveStatic('samples'));
+  httpServer = http.createServer(app).listen(9000, done);
+});
+
+gulp.task('selenium', done => {
+  selenium.install({
+    logger (message) {
+      process.stdout.write(`${message} \n`)
+    },
+    progressCb: (totalLength, progressLength) => {
+      process.stdout.write(`Downloading drivers ${Math.round(progressLength / totalLength * 100)}% \r`)
+    }
+  }, err => {
+    if (err) return done(err)
+
+    selenium.start({
+      spawnOptions: {
+          stdio: 'ignore'
+      }
+    }, (err, child) => {
+      selenium.child = child
+      console.log('Selenium error: ', err)
+      done()
+    })
+  })
+})
+
+gulp.task('test:e2e', ['http', 'selenium'], () => gulp.src('wdio.conf.js')
+  .pipe(webdriver({
+    logLevel: 'verbose',
+    waitforTimeout: 12345,
+    framework: 'mocha'
+  })).once('end', () => {
+    selenium.child.kill()
+    httpServer.close()
+  })
+)
 
 function cleanDist(done) {
   del([destinationFolder]).then(() => done());

@@ -27,5 +27,8 @@ bower_components
 coverage
 tmp
 
+# webdriverio
+errorShots
+
 # Users Environment Variables
 .lock-wscript

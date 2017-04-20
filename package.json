@@ -48,7 +48,15 @@
     "sinon": "1.17.5",
     "sinon-chai": "2.8.0",
     "webpack": "1.13.2",
-    "webpack-stream": "3.2.0"
+    "webpack-stream": "3.2.0",
+    "connect": "^3.6.0",
+    "gulp-webdriver": "^2.0.3",
+    "serve-static": "^1.12.1",
+    "wdio-mocha-framework": "^0.5.9",
+    "wdio-phantomjs-service": "^0.2.2",
+    "wdio-selenium-standalone-service": "0.0.8",
+    "wdio-spec-reporter": "^0.1.0",
+    "webdriverio": "^4.6.2"
   },
   "babelBoilerplateOptions": {
     "entryFileName": "cyclow.js",
