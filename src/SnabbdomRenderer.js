@@ -6,6 +6,7 @@ import Message from './Message'
 import snabbdom from 'snabbdom'
 import eventlisteners from 'snabbdom/modules/eventlisteners'
 import props from 'snabbdom/modules/props'
+import attributes from 'snabbdom/modules/attributes'
 import klass from 'snabbdom/modules/class'
 import h from 'snabbdom/h'
 
@@ -30,13 +31,13 @@ const getHandlers = (handlers, component) => mapObject(handlers,
     return [event, newHandler]
   })
 
-const toSnabbdom = vdom => {
+const toSnabbdom = (vdom, svg = false) => {
   if (isString(vdom)) return vdom
   if (isArray(vdom)) return flatten(vdom).filter(isDefined).map(toSnabbdom)
 
   const {tag = 'div', attrs = {}, on = {}, content = [], component} = vdom
 
-  const {class: klass, ...props} = attrs
+  const {class: klass, ...rest} = attrs
 
   const handlers = getHandlers(on, component)
 
@@ -46,9 +47,24 @@ const toSnabbdom = vdom => {
       }}
     : {}
 
+  const newSvg = svg || tag === 'svg'
+
+  console.log('toSnabbdom',
+    tag,
+    newSvg,
+    {
+      [newSvg ? 'attrs' : 'props']: rest
+    },
+    content
+  )
+
   return h(tag,
-    {props, class: klass, on: handlers, ...hook},
-    toSnabbdom(content))
+    {
+      [newSvg ? 'attrs' : 'props']: rest,
+      class: klass,
+      on: handlers, ...hook
+    },
+    toSnabbdom(content, newSvg))
 }
 
 const updateProps = (oldVnode, vnode) => {
@@ -60,7 +76,13 @@ const updateProps = (oldVnode, vnode) => {
 const liveProps = {create: updateProps, update: updateProps}
 
 const SnabbdomRenderer = (targetId) => {
-  const patch = snabbdom.init([eventlisteners, props, klass, liveProps])
+  const patch = snabbdom.init([
+    eventlisteners,
+    props, 
+    attributes,
+    klass,
+    liveProps
+  ])
 
   const target = targetId
     ? document.getElementById(targetId)
