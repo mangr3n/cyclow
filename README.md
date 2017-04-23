@@ -189,6 +189,21 @@ This is a virtual DOM element example:
   }
 ```
 
+If you prefer, you can use `h` [hyperscript](https://github.com/hyperhype/hyperscript) helper:
+```js
+  import {Block, run, h} from 'cyclow'
+
+  const Counter = () => Block({
+    on: {
+      'in.init':  () => state => 0,
+      'dom.click': () => state => state + 1
+    },
+    view: state => view: state => h('button', {on: {click: 'click'}}, `Count: ${state}`)
+  })
+
+  run(Counter)
+```
+
 ## <a name="renderer"></a> Renderer
 A renderer is just a component factory. It creates a component that takes a [Virtual DOM Element](#virtual-dom-element) as an input and it converts into a Real DOM Element and it updates the HTML document. **cyclow** uses [snabbdom](https://github.com/snabbdom/snabbdom) as default renderer.
 
