@@ -33,7 +33,9 @@ const getHandlers = (handlers, component) => mapObject(handlers,
 
 const toSnabbdom = (vdom, svg = false) => {
   if (isString(vdom)) return vdom
-  if (isArray(vdom)) return flatten(vdom).filter(isDefined).map(toSnabbdom)
+  if (isArray(vdom)) {
+    return flatten(vdom).filter(isDefined).map(v => toSnabbdom(v, svg))
+  }
 
   const {tag = 'div', attrs = {}, on = {}, content = [], component} = vdom
 
@@ -49,20 +51,12 @@ const toSnabbdom = (vdom, svg = false) => {
 
   const newSvg = svg || tag === 'svg'
 
-  console.log('toSnabbdom',
-    tag,
-    newSvg,
-    {
-      [newSvg ? 'attrs' : 'props']: rest
-    },
-    content
-  )
-
   return h(tag,
     {
       [newSvg ? 'attrs' : 'props']: rest,
       class: klass,
-      on: handlers, ...hook
+      on: handlers,
+      ...hook
     },
     toSnabbdom(content, newSvg))
 }
@@ -78,7 +72,7 @@ const liveProps = {create: updateProps, update: updateProps}
 const SnabbdomRenderer = (targetId) => {
   const patch = snabbdom.init([
     eventlisteners,
-    props, 
+    props,
     attributes,
     klass,
     liveProps
