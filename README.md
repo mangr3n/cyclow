@@ -223,8 +223,11 @@ Arguments:
 Arguments:
 - `options`:
   - `blocks`
+    - Add documentation that explains how to transmit signals in and out of blocks
   - `on`
+    - Add documentation that explains the different styles of transforms
   - `view`
+    - Add documentation that explains the args to views
 
 Returns: A [graflow] component
 
