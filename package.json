@@ -63,7 +63,7 @@
     "mainVarName": "cyclow"
   },
   "dependencies": {
-    "graflow": "0.3.2",
-    "snabbdom": "^0.6.4"
+    "graflow" : "mangr3n/graflow#master",
+    "snabbdom": "0.6.4"
   }
 }

@@ -76,6 +76,10 @@ function cleanTmp(done) {
   del(['tmp']).then(() => done());
 }
 
+function cleanSamples(done) {
+  del(["samples/**/dist/*.*"]).then(() => done());
+}
+
 // Lint a set of files
 function lint(files) {
   return gulp.src(files)
@@ -270,6 +274,8 @@ gulp.task('clean', cleanDist);
 // Remove our temporary files
 gulp.task('clean-tmp', cleanTmp);
 
+gulp.task('clean-samples',cleanSamples)
+
 // Lint our source code
 gulp.task('lint-src', lintSrc);
 
@@ -285,7 +291,7 @@ gulp.task('lint', ['lint-src', 'lint-test', 'lint-gulpfile']);
 // Build two versions of the library
 gulp.task('build', ['lint', 'clean'], build);
 
-gulp.task('samples:build', ['build'], buildSamples);
+gulp.task('samples:build', ['build','clean-samples'], buildSamples);
 
 gulp.task('samples:open', ['samples:build'], openSamples);
 

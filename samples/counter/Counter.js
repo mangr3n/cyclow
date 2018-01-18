@@ -1,15 +1,49 @@
-import { Block } from '../../dist/cyclow'
+import {
+  Block
+} from '../../dist/cyclow';
 
-const Counter = () => Block({
+const outTest = (v) => ({
+  'out.signals': {
+    'count': v
+  }
+});
+const set = (v, _) => v;
+
+const Label = (label) => ({
+  tag: 'span',
+  content: label
+});
+const Button = (label, signal) => ({
+  tag: 'button',
+  on: { click: signal},
+  content: label
+});
+
+const Counter = (label) => Block({
+  inputs: ['init', 'reset', 'set'],
+  outputs: ['count'],
   on: {
     'in.init': () => state => 0,
-    'dom.click': () => state => state + 1
+    'in.reset': () => state => 0,
+    'in.set': set,
+    'dom.inc': () => state => state + 1,
+    'dom.dec': () => state => state - 1,
+    bus: msg => {
+      console.log('Message: ', msg.blocks, msg.values, msg);
+      return msg;
+    },
+    'state': state => outTest(state)
+
   },
+
   view: state => ({
-    tag: 'button',
-    on: {click: 'click'},
-    content: `Count: ${state}`
+    content: [
+      Label(`Count: ${state}`),
+      Button('+','inc'),
+      Button('-','dec')
+    ]
   })
-})
+});
+
 
 export default Counter

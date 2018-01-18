@@ -140,6 +140,21 @@ return /******/ (function(modules) { // webpackBootstrap
 						return _interopRequireDefault(_run).default;
 					}
 				});
+				Object.defineProperty(exports, 'runComponent', {
+					enumerable: true,
+					get: function get() {
+						return _run.runComponent;
+					}
+				});
+	
+				var _h = __webpack_require__(16);
+	
+				Object.defineProperty(exports, 'h', {
+					enumerable: true,
+					get: function get() {
+						return _interopRequireDefault(_h).default;
+					}
+				});
 	
 				var _SnabbdomRenderer = __webpack_require__(2);
 	
@@ -150,7 +165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _State = __webpack_require__(16);
+				var _State = __webpack_require__(17);
 	
 				Object.defineProperty(exports, 'State', {
 					enumerable: true,
@@ -159,7 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Events = __webpack_require__(17);
+				var _Events = __webpack_require__(18);
 	
 				Object.defineProperty(exports, 'Events', {
 					enumerable: true,
@@ -168,7 +183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _View = __webpack_require__(18);
+				var _View = __webpack_require__(19);
 	
 				Object.defineProperty(exports, 'View', {
 					enumerable: true,
@@ -177,7 +192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Block = __webpack_require__(19);
+				var _Block = __webpack_require__(20);
 	
 				Object.defineProperty(exports, 'Block', {
 					enumerable: true,
@@ -200,6 +215,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				Object.defineProperty(exports, "__esModule", {
 					value: true
 				});
+				exports.run = exports.runComponent = undefined;
 	
 				var _SnabbdomRenderer = __webpack_require__(2);
 	
@@ -211,25 +227,29 @@ return /******/ (function(modules) { // webpackBootstrap
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
 	
-				var run = function run(MainComponent) {
+				var runComponent = exports.runComponent = function runComponent(MainComponent) {
 					var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-					document.addEventListener('DOMContentLoaded', function () {
-						var init = opts.init || {};
-						var Renderer = opts.renderer || _SnabbdomRenderer2.default;
+					var init = opts.init || {};
+					var Renderer = opts.renderer || _SnabbdomRenderer2.default;
 	
-						var comp = (0, _graflow.Component)({
-							components: {
-								main: MainComponent(),
-								renderer: Renderer(opts.target),
-								outMapper: (0, _graflow.Component)(function (v, next) {
-									if (v.vdom) next(v.vdom);
-								})
-							},
-							connections: [['in', 'main'], ['main', 'outMapper'], ['outMapper', 'renderer']]
-						});
+					var comp = (0, _graflow.Component)({
+						components: {
+							main: MainComponent(),
+							renderer: Renderer(opts.target),
+							demuxer: (0, _graflow.Demuxer)('vdom', 'signals')
+						},
+						connections: [['in', 'main'], ['main', 'demuxer'], ['demuxer.vdom', 'renderer'], ['demuxer.signals', 'out']]
+					});
+					comp.send({ init: init });
+					return comp;
+				};
 	
-						comp.send({ init: init });
+				var run = exports.run = function run(MainComponent) {
+					var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+					window.addEventListener('DOMContentLoaded', function () {
+						return runComponent(MainComponent, opts);
 					});
 				};
 	
@@ -368,7 +388,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					var svg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 	
 					if ((0, _utils.isString)(vdom)) return vdom;
-					if ((0, _utils.isArray)(vdom)) return (0, _utils.flatten)(vdom).filter(_utils.isDefined).map(toSnabbdom);
+					if ((0, _utils.isArray)(vdom)) {
+						return (0, _utils.flatten)(vdom).filter(_utils.isDefined).map(function (v) {
+							return toSnabbdom(v, svg);
+						});
+					}
 	
 					var _vdom$tag = vdom.tag,
 					    tag = _vdom$tag === undefined ? 'div' : _vdom$tag,
@@ -391,8 +415,6 @@ return /******/ (function(modules) { // webpackBootstrap
 						} } : {};
 	
 					var newSvg = svg || tag === 'svg';
-	
-					console.log('toSnabbdom', tag, newSvg, _defineProperty({}, newSvg ? 'attrs' : 'props', rest), content);
 	
 					return (0, _h2.default)(tag, _extends((_extends2 = {}, _defineProperty(_extends2, newSvg ? 'attrs' : 'props', rest), _defineProperty(_extends2, 'class', klass), _defineProperty(_extends2, 'on', handlers), _extends2), hook), toSnabbdom(content, newSvg));
 				};
@@ -731,7 +753,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 							var _utils = __webpack_require__(2);
 	
+							var _componentId = 0;
+	
+							var nextId = function nextId() {
+								return _componentId++;
+							};
+	
 							var componentFromFunction = function componentFromFunction(func) {
+								var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+	
 								var node = toNode(func);
 	
 								return {
@@ -742,8 +772,14 @@ return /******/ (function(modules) { // webpackBootstrap
 									on: function on(handler) {
 										return node.on(handler);
 									},
-									inputs: { default: node },
-									outputs: { default: node }
+									inputs: {
+										default: node
+									},
+									outputs: {
+										default: node
+									},
+									id: node.id,
+									name: name
 								};
 							};
 	
@@ -795,7 +831,14 @@ return /******/ (function(modules) { // webpackBootstrap
 									processQueue();
 								};
 	
-								return { on: on, send: send, addListener: addListener, addToQueue: addToQueue, processQueue: processQueue };
+								return {
+									on: on,
+									send: send,
+									addListener: addListener,
+									addToQueue: addToQueue,
+									processQueue: processQueue,
+									id: nextId()
+								};
 							};
 	
 							var selectNode = function selectNode(name, components) {
@@ -830,7 +873,9 @@ return /******/ (function(modules) { // webpackBootstrap
 								    _obj$inputs = obj.inputs,
 								    inputs = _obj$inputs === undefined ? [] : _obj$inputs,
 								    _obj$outputs = obj.outputs,
-								    outputs = _obj$outputs === undefined ? [] : _obj$outputs;
+								    outputs = _obj$outputs === undefined ? [] : _obj$outputs,
+								    _obj$name = obj.name,
+								    name = _obj$name === undefined ? '' : _obj$name;
 	
 								var inputNames = (0, _utils.unique)(inputs.concat('default'));
 								var outputNames = (0, _utils.unique)(outputs.concat('default'));
@@ -843,8 +888,14 @@ return /******/ (function(modules) { // webpackBootstrap
 								var inNodes = (0, _utils.arrayToObject)(inputNames, toNodes);
 								var outNodes = (0, _utils.arrayToObject)(outputNames, toNodes);
 	
-								components.in = { inputs: inNodes, outputs: inNodes };
-								components.out = { inputs: outNodes, outputs: outNodes };
+								components.in = {
+									inputs: inNodes,
+									outputs: inNodes
+								};
+								components.out = {
+									inputs: outNodes,
+									outputs: outNodes
+								};
 	
 								connections.forEach(function (_ref) {
 									var _ref2 = _slicedToArray(_ref, 2),
@@ -885,7 +936,14 @@ return /******/ (function(modules) { // webpackBootstrap
 									inNodes[name].send(value);
 								};
 	
-								return { send: send, on: on, inputs: inNodes, outputs: outNodes };
+								return {
+									send: send,
+									on: on,
+									inputs: inNodes,
+									outputs: outNodes,
+									id: nextId(),
+									name: name
+								};
 							};
 	
 							var Component = function Component(arg) {
@@ -1337,6 +1395,7 @@ return /******/ (function(modules) { // webpackBootstrap
 								}return obj;
 							}
 	
+							// Chain takes a list of Components and chains the inputs to the outputs.
 							var Chain = function Chain() {
 								for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 									args[_key] = arguments[_key];
@@ -2094,7 +2153,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				Object.defineProperty(exports, "__esModule", {
 					value: true
 				});
-				exports.getHandler = exports.toMessage = exports.isMessage = exports.Message = exports.default = undefined;
+				exports.getHandler = exports.toMessage = exports.isMessageForBlock = exports.isMessage = exports.Message = exports.default = undefined;
 	
 				var _slicedToArray = function () {
 					function sliceIterator(arr, i) {
@@ -2193,11 +2252,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				var isMessage = function isMessage(arg) {
 					return arg[messageSymbol];
 				};
+				var isMessageForBlock = function isMessageForBlock(blockName) {
+					return function (m) {
+						return isMessage(m) && m.blocks.includes(blockName);
+					};
+				};
 	
 				var toMessage = function toMessage(arg, converter) {
 					if (isMessage(arg)) return arg;
 					if ((0, _utils.isArray)(arg)) return arg.map(toMessage);
-	
 					return [].concat(converter(arg));
 				};
 	
@@ -2213,6 +2276,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				exports.default = Message;
 				exports.Message = Message;
 				exports.isMessage = isMessage;
+				exports.isMessageForBlock = isMessageForBlock;
 				exports.toMessage = toMessage;
 				exports.getHandler = getHandler;
 	
@@ -2311,9 +2375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 							var elm = vnode.elm = isDef(data) && isDef(i = data.ns) ? api.createElementNS(i, tag) : api.createElement(tag);
 							if (hash < dot) elm.id = sel.slice(hash + 1, dot);
 							if (dotIdx > 0) elm.className = sel.slice(dot + 1).replace(/\./g, ' ');
-							for (i = 0; i < cbs.create.length; ++i) {
-								cbs.create[i](emptyNode, vnode);
-							}if (is.array(children)) {
+							if (is.array(children)) {
 								for (i = 0; i < children.length; ++i) {
 									var ch = children[i];
 									if (ch != null) {
@@ -2323,7 +2385,9 @@ return /******/ (function(modules) { // webpackBootstrap
 							} else if (is.primitive(vnode.text)) {
 								api.appendChild(elm, api.createTextNode(vnode.text));
 							}
-							i = vnode.data.hook; // Reuse variable
+							for (i = 0; i < cbs.create.length; ++i) {
+								cbs.create[i](emptyNode, vnode);
+							}i = vnode.data.hook; // Reuse variable
 							if (isDef(i)) {
 								if (i.create) i.create(emptyNode, vnode);
 								if (i.insert) insertedVnodeQueue.push(vnode);
@@ -2891,6 +2955,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				function updateAttrs(oldVnode, vnode) {
 					var key,
+					    cur,
+					    old,
 					    elm = vnode.elm,
 					    oldAttrs = oldVnode.data.attrs,
 					    attrs = vnode.data.attrs,
@@ -2901,26 +2967,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					attrs = attrs || {};
 					// update modified attributes, add new attributes
 					for (key in attrs) {
-						var cur = attrs[key];
-						var old = oldAttrs[key];
+						cur = attrs[key];
+						old = oldAttrs[key];
 						if (old !== cur) {
-							if (booleanAttrsDict[key]) {
-								if (cur) {
-									elm.setAttribute(key, "");
-								} else {
-									elm.removeAttribute(key);
-								}
-							} else {
+							if (!cur && booleanAttrsDict[key]) elm.removeAttribute(key);else {
 								namespaceSplit = key.split(":");
-								if (namespaceSplit.length > 1 && NamespaceURIs.hasOwnProperty(namespaceSplit[0])) {
-									elm.setAttributeNS(NamespaceURIs[namespaceSplit[0]], key, cur);
-								} else {
-									elm.setAttribute(key, cur);
-								}
+								if (namespaceSplit.length > 1 && NamespaceURIs.hasOwnProperty(namespaceSplit[0])) elm.setAttributeNS(NamespaceURIs[namespaceSplit[0]], key, cur);else elm.setAttribute(key, cur);
 							}
 						}
 					}
-					// remove removed attributes
+					//remove removed attributes
 					// use `in` operator since the previous `for` iteration uses it (.i.e. add even attributes with undefined value)
 					// the other option is to remove all attributes with value == undefined
 					for (key in oldAttrs) {
@@ -2971,6 +3027,38 @@ return /******/ (function(modules) { // webpackBootstrap
 				/***/
 			},
 			/* 16 */
+			/***/function (module, exports) {
+	
+				"use strict";
+	
+				Object.defineProperty(exports, "__esModule", {
+					value: true
+				});
+	
+				var _extends = Object.assign || function (target) {
+					for (var i = 1; i < arguments.length; i++) {
+						var source = arguments[i];for (var key in source) {
+							if (Object.prototype.hasOwnProperty.call(source, key)) {
+								target[key] = source[key];
+							}
+						}
+					}return target;
+				};
+	
+				var h = function h(tagName) {
+					var properties = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+					var children = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+					return _extends({}, properties, {
+						tag: tagName,
+						content: children
+					});
+				};
+	
+				exports.default = h;
+	
+				/***/
+			},
+			/* 17 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3068,7 +3156,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 17 */
+			/* 18 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3121,6 +3209,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					});
 				};
 	
+				// Too Smart?  Not obvious interpretation of the event handlers
 				var messageConverter = function messageConverter(arg) {
 					if ((0, _utils.isString)(arg)) return (0, _Message.Message)(arg);
 					if ((0, _utils.isFunction)(arg)) return (0, _Message.Message)('state', arg);
@@ -3162,12 +3251,16 @@ return /******/ (function(modules) { // webpackBootstrap
 					}), (0, _graflow.Filter)(_utils.isDefined), (0, _graflow.ArraySerializer)());
 				};
 	
+				var isMessageForEventsBlock = function isMessageForEventsBlock(v) {
+					return (0, _Message.isMessage)(v) && v.blocks.includes('events');
+				};
+				var valuesFromMessage = function valuesFromMessage(m) {
+					return m.values;
+				};
+	
 				var Events = function Events(handlers) {
-					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
-						return (0, _Message.isMessage)(v) && v.blocks.includes('events');
-					}), (0, _graflow.Mapper)(function (m) {
-						return m.values;
-					}), EventState(), EventHandler(handlers), (0, _graflow.Mapper)(function (v) {
+					return (0, _graflow.Chain)((0, _graflow.Filter)((0, _Message.isMessageForBlock)('events')), (0, _graflow.Mapper)(valuesFromMessage), EventState(), // Add in States with Events
+					EventHandler(handlers), (0, _graflow.Mapper)(function (v) {
 						return (0, _Message.toMessage)(v, messageConverter);
 					}));
 				};
@@ -3176,7 +3269,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 18 */
+			/* 19 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3261,7 +3354,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 19 */
+			/* 20 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3280,39 +3373,39 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				};
 	
-				var _BusBlock = __webpack_require__(20);
+				var _BusBlock = __webpack_require__(21);
 	
 				var _BusBlock2 = _interopRequireDefault(_BusBlock);
 	
-				var _Bus = __webpack_require__(21);
+				var _Bus = __webpack_require__(22);
 	
 				var _Bus2 = _interopRequireDefault(_Bus);
 	
-				var _Inputs = __webpack_require__(22);
+				var _Inputs = __webpack_require__(23);
 	
 				var _Inputs2 = _interopRequireDefault(_Inputs);
 	
-				var _Outputs = __webpack_require__(23);
+				var _Outputs = __webpack_require__(24);
 	
 				var _Outputs2 = _interopRequireDefault(_Outputs);
 	
-				var _State = __webpack_require__(16);
+				var _State = __webpack_require__(17);
 	
 				var _State2 = _interopRequireDefault(_State);
 	
-				var _Events = __webpack_require__(17);
+				var _Events = __webpack_require__(18);
 	
 				var _Events2 = _interopRequireDefault(_Events);
 	
-				var _View = __webpack_require__(18);
+				var _View = __webpack_require__(19);
 	
 				var _View2 = _interopRequireDefault(_View);
 	
-				var _Dom = __webpack_require__(24);
+				var _Dom = __webpack_require__(25);
 	
 				var _Dom2 = _interopRequireDefault(_Dom);
 	
-				var _CustomBlocks = __webpack_require__(25);
+				var _CustomBlocks = __webpack_require__(26);
 	
 				var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
 	
@@ -3357,7 +3450,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 20 */
+			/* 21 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3402,7 +3495,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 21 */
+			/* 22 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3425,7 +3518,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 22 */
+			/* 23 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3486,7 +3579,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 23 */
+			/* 24 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3499,19 +3592,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _Message = __webpack_require__(5);
 	
+				var toValues = function toValues(m) {
+					return m.values;
+				};
+	
 				var Outputs = function Outputs() {
-					return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
-						return (0, _Message.isMessage)(v) && v.blocks.includes('out');
-					}), (0, _graflow.Mapper)(function (m) {
-						return m.values;
-					}));
+					return (0, _graflow.Chain)(
+					// Logger({prefix:'Outputs/Outputs/Chain/input'}),
+					(0, _graflow.Filter)((0, _Message.isMessageForBlock)('out')),
+					// Logger({prefix:'Outputs/Outputs/Chain/isMessageForOutputs'}),
+					(0, _graflow.Mapper)(toValues)
+					// , Logger({prefix:'Outputs/Outputs/Chain/output'})
+					);
 				};
 	
 				exports.default = Outputs;
 	
 				/***/
 			},
-			/* 24 */
+			/* 25 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3556,7 +3655,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 25 */
+			/* 26 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';

@@ -1,4 +1,6 @@
-import { run } from '../../dist/cyclow'
+import { runComponent } from '../../dist/cyclow'
 import Counter from './Counter'
 
-run(Counter)
+window.addEventListener('DOMContentLoaded',() => {
+  window.component = runComponent(Counter,{onload:true});
+});

@@ -68,6 +68,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return _interopRequireDefault(_run).default;
 	  }
 	});
+	Object.defineProperty(exports, 'runComponent', {
+	  enumerable: true,
+	  get: function get() {
+	    return _run.runComponent;
+	  }
+	});
+	
+	var _h = __webpack_require__(16);
+	
+	Object.defineProperty(exports, 'h', {
+	  enumerable: true,
+	  get: function get() {
+	    return _interopRequireDefault(_h).default;
+	  }
+	});
 	
 	var _SnabbdomRenderer = __webpack_require__(2);
 	
@@ -78,7 +93,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _State = __webpack_require__(15);
+	var _State = __webpack_require__(17);
 	
 	Object.defineProperty(exports, 'State', {
 	  enumerable: true,
@@ -87,7 +102,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _Events = __webpack_require__(16);
+	var _Events = __webpack_require__(18);
 	
 	Object.defineProperty(exports, 'Events', {
 	  enumerable: true,
@@ -96,7 +111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _View = __webpack_require__(17);
+	var _View = __webpack_require__(19);
 	
 	Object.defineProperty(exports, 'View', {
 	  enumerable: true,
@@ -105,7 +120,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 	});
 	
-	var _Block = __webpack_require__(18);
+	var _Block = __webpack_require__(20);
 	
 	Object.defineProperty(exports, 'Block', {
 	  enumerable: true,
@@ -125,6 +140,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.run = exports.runComponent = undefined;
 	
 	var _SnabbdomRenderer = __webpack_require__(2);
 	
@@ -134,25 +150,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var run = function run(MainComponent) {
+	var runComponent = exports.runComponent = function runComponent(MainComponent) {
 	  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 	
-	  document.addEventListener('DOMContentLoaded', function () {
-	    var init = opts.init || {};
-	    var Renderer = opts.renderer || _SnabbdomRenderer2.default;
+	  var init = opts.init || {};
+	  var Renderer = opts.renderer || _SnabbdomRenderer2.default;
 	
-	    var comp = (0, _graflow.Component)({
-	      components: {
-	        main: MainComponent(),
-	        renderer: Renderer(opts.target),
-	        outMapper: (0, _graflow.Component)(function (v, next) {
-	          if (v.vdom) next(v.vdom);
-	        })
-	      },
-	      connections: [['in', 'main'], ['main', 'outMapper'], ['outMapper', 'renderer']]
-	    });
+	  var comp = (0, _graflow.Component)({
+	    components: {
+	      main: MainComponent(),
+	      renderer: Renderer(opts.target),
+	      demuxer: (0, _graflow.Demuxer)('vdom', 'signals')
+	    },
+	    connections: [['in', 'main'], ['main', 'demuxer'], ['demuxer.vdom', 'renderer'], ['demuxer.signals', 'out']]
+	  });
+	  comp.send({ init: init });
+	  return comp;
+	};
 	
-	    comp.send({ init: init });
+	var run = exports.run = function run(MainComponent) {
+	  var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	
+	  window.addEventListener('DOMContentLoaded', function () {
+	    return runComponent(MainComponent, opts);
 	  });
 	};
 	
@@ -194,7 +214,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _props2 = _interopRequireDefault(_props);
 	
-	var _class = __webpack_require__(14);
+	var _attributes = __webpack_require__(14);
+	
+	var _attributes2 = _interopRequireDefault(_attributes);
+	
+	var _class = __webpack_require__(15);
 	
 	var _class2 = _interopRequireDefault(_class);
 	
@@ -203,6 +227,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _h2 = _interopRequireDefault(_h);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
 	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 	
@@ -235,8 +261,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	var toSnabbdom = function toSnabbdom(vdom) {
+	  var _extends2;
+	
+	  var svg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+	
 	  if ((0, _utils.isString)(vdom)) return vdom;
-	  if ((0, _utils.isArray)(vdom)) return (0, _utils.flatten)(vdom).filter(_utils.isDefined).map(toSnabbdom);
+	  if ((0, _utils.isArray)(vdom)) {
+	    return (0, _utils.flatten)(vdom).filter(_utils.isDefined).map(function (v) {
+	      return toSnabbdom(v, svg);
+	    });
+	  }
 	
 	  var _vdom$tag = vdom.tag,
 	      tag = _vdom$tag === undefined ? 'div' : _vdom$tag,
@@ -249,7 +283,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      component = vdom.component;
 	
 	  var klass = attrs.class,
-	      props = _objectWithoutProperties(attrs, ['class']);
+	      rest = _objectWithoutProperties(attrs, ['class']);
 	
 	  var handlers = getHandlers(on, component);
 	
@@ -258,7 +292,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    } } : {};
 	
-	  return (0, _h2.default)(tag, _extends({ props: props, class: klass, on: handlers }, hook), toSnabbdom(content));
+	  var newSvg = svg || tag === 'svg';
+	
+	  return (0, _h2.default)(tag, _extends((_extends2 = {}, _defineProperty(_extends2, newSvg ? 'attrs' : 'props', rest), _defineProperty(_extends2, 'class', klass), _defineProperty(_extends2, 'on', handlers), _extends2), hook), toSnabbdom(content, newSvg));
 	};
 	
 	var updateProps = function updateProps(oldVnode, vnode) {
@@ -270,7 +306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var liveProps = { create: updateProps, update: updateProps };
 	
 	var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
-	  var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _class2.default, liveProps]);
+	  var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _attributes2.default, _class2.default, liveProps]);
 	
 	  var target = targetId ? document.getElementById(targetId) : document.body.appendChild(document.createElement('div'));
 	
@@ -571,7 +607,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		var _utils = __webpack_require__(2);
 		
+		var _componentId = 0;
+		
+		var nextId = function nextId() {
+		  return _componentId++;
+		};
+		
 		var componentFromFunction = function componentFromFunction(func) {
+		  var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+		
 		  var node = toNode(func);
 		
 		  return {
@@ -582,8 +626,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		    on: function on(handler) {
 		      return node.on(handler);
 		    },
-		    inputs: { default: node },
-		    outputs: { default: node }
+		    inputs: {
+		      default: node
+		    },
+		    outputs: {
+		      default: node
+		    },
+		    id: node.id,
+		    name: name
 		  };
 		};
 		
@@ -635,7 +685,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		    processQueue();
 		  };
 		
-		  return { on: on, send: send, addListener: addListener, addToQueue: addToQueue, processQueue: processQueue };
+		  return {
+		    on: on,
+		    send: send,
+		    addListener: addListener,
+		    addToQueue: addToQueue,
+		    processQueue: processQueue,
+		    id: nextId()
+		  };
 		};
 		
 		var selectNode = function selectNode(name, components) {
@@ -670,7 +727,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		      _obj$inputs = obj.inputs,
 		      inputs = _obj$inputs === undefined ? [] : _obj$inputs,
 		      _obj$outputs = obj.outputs,
-		      outputs = _obj$outputs === undefined ? [] : _obj$outputs;
+		      outputs = _obj$outputs === undefined ? [] : _obj$outputs,
+		      _obj$name = obj.name,
+		      name = _obj$name === undefined ? '' : _obj$name;
 		
 		
 		  var inputNames = (0, _utils.unique)(inputs.concat('default'));
@@ -684,8 +743,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		  var inNodes = (0, _utils.arrayToObject)(inputNames, toNodes);
 		  var outNodes = (0, _utils.arrayToObject)(outputNames, toNodes);
 		
-		  components.in = { inputs: inNodes, outputs: inNodes };
-		  components.out = { inputs: outNodes, outputs: outNodes };
+		  components.in = {
+		    inputs: inNodes,
+		    outputs: inNodes
+		  };
+		  components.out = {
+		    inputs: outNodes,
+		    outputs: outNodes
+		  };
 		
 		  connections.forEach(function (_ref) {
 		    var _ref2 = _slicedToArray(_ref, 2),
@@ -726,7 +791,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		    inNodes[name].send(value);
 		  };
 		
-		  return { send: send, on: on, inputs: inNodes, outputs: outNodes };
+		  return {
+		    send: send,
+		    on: on,
+		    inputs: inNodes,
+		    outputs: outNodes,
+		    id: nextId(),
+		    name: name
+		  };
 		};
 		
 		var Component = function Component(arg) {
@@ -1056,6 +1128,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 		
+		// Chain takes a list of Components and chains the inputs to the outputs.
 		var Chain = function Chain() {
 		  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 		    args[_key] = arguments[_key];
@@ -1688,7 +1761,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.getHandler = exports.toMessage = exports.isMessage = exports.Message = exports.default = undefined;
+	exports.getHandler = exports.toMessage = exports.isMessageForBlock = exports.isMessage = exports.Message = exports.default = undefined;
 	
 	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
@@ -1757,11 +1830,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	var isMessage = function isMessage(arg) {
 	  return arg[messageSymbol];
 	};
+	var isMessageForBlock = function isMessageForBlock(blockName) {
+	  return function (m) {
+	    return isMessage(m) && m.blocks.includes(blockName);
+	  };
+	};
 	
 	var toMessage = function toMessage(arg, converter) {
 	  if (isMessage(arg)) return arg;
 	  if ((0, _utils.isArray)(arg)) return arg.map(toMessage);
-	
 	  return [].concat(converter(arg));
 	};
 	
@@ -1777,6 +1854,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Message;
 	exports.Message = Message;
 	exports.isMessage = isMessage;
+	exports.isMessageForBlock = isMessageForBlock;
 	exports.toMessage = toMessage;
 	exports.getHandler = getHandler;
 
@@ -1867,8 +1945,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                elm.id = sel.slice(hash + 1, dot);
 	            if (dotIdx > 0)
 	                elm.className = sel.slice(dot + 1).replace(/\./g, ' ');
-	            for (i = 0; i < cbs.create.length; ++i)
-	                cbs.create[i](emptyNode, vnode);
 	            if (is.array(children)) {
 	                for (i = 0; i < children.length; ++i) {
 	                    var ch = children[i];
@@ -1880,6 +1956,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            else if (is.primitive(vnode.text)) {
 	                api.appendChild(elm, api.createTextNode(vnode.text));
 	            }
+	            for (i = 0; i < cbs.create.length; ++i)
+	                cbs.create[i](emptyNode, vnode);
 	            i = vnode.data.hook; // Reuse variable
 	            if (isDef(i)) {
 	                if (i.create)
@@ -2440,6 +2518,62 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	"use strict";
+	var NamespaceURIs = {
+	    "xlink": "http://www.w3.org/1999/xlink"
+	};
+	var booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "checked", "compact", "controls", "declare",
+	    "default", "defaultchecked", "defaultmuted", "defaultselected", "defer", "disabled", "draggable",
+	    "enabled", "formnovalidate", "hidden", "indeterminate", "inert", "ismap", "itemscope", "loop", "multiple",
+	    "muted", "nohref", "noresize", "noshade", "novalidate", "nowrap", "open", "pauseonexit", "readonly",
+	    "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate",
+	    "truespeed", "typemustmatch", "visible"];
+	var booleanAttrsDict = Object.create(null);
+	for (var i = 0, len = booleanAttrs.length; i < len; i++) {
+	    booleanAttrsDict[booleanAttrs[i]] = true;
+	}
+	function updateAttrs(oldVnode, vnode) {
+	    var key, cur, old, elm = vnode.elm, oldAttrs = oldVnode.data.attrs, attrs = vnode.data.attrs, namespaceSplit;
+	    if (!oldAttrs && !attrs)
+	        return;
+	    if (oldAttrs === attrs)
+	        return;
+	    oldAttrs = oldAttrs || {};
+	    attrs = attrs || {};
+	    // update modified attributes, add new attributes
+	    for (key in attrs) {
+	        cur = attrs[key];
+	        old = oldAttrs[key];
+	        if (old !== cur) {
+	            if (!cur && booleanAttrsDict[key])
+	                elm.removeAttribute(key);
+	            else {
+	                namespaceSplit = key.split(":");
+	                if (namespaceSplit.length > 1 && NamespaceURIs.hasOwnProperty(namespaceSplit[0]))
+	                    elm.setAttributeNS(NamespaceURIs[namespaceSplit[0]], key, cur);
+	                else
+	                    elm.setAttribute(key, cur);
+	            }
+	        }
+	    }
+	    //remove removed attributes
+	    // use `in` operator since the previous `for` iteration uses it (.i.e. add even attributes with undefined value)
+	    // the other option is to remove all attributes with value == undefined
+	    for (key in oldAttrs) {
+	        if (!(key in attrs)) {
+	            elm.removeAttribute(key);
+	        }
+	    }
+	}
+	exports.attributesModule = { create: updateAttrs, update: updateAttrs };
+	Object.defineProperty(exports, "__esModule", { value: true });
+	exports.default = exports.attributesModule;
+	//# sourceMappingURL=attributes.js.map
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	"use strict";
 	function updateClass(oldVnode, vnode) {
 	    var cur, name, elm = vnode.elm, oldClass = oldVnode.data.class, klass = vnode.data.class;
 	    if (!oldClass && !klass)
@@ -2466,7 +2600,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	//# sourceMappingURL=class.js.map
 
 /***/ },
-/* 15 */
+/* 16 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
+	var h = function h(tagName) {
+	  var properties = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	  var children = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+	  return _extends({}, properties, {
+	    tag: tagName,
+	    content: children
+	  });
+	};
+	
+	exports.default = h;
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2531,7 +2688,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = State;
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2560,6 +2717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	};
 	
+	// Too Smart?  Not obvious interpretation of the event handlers
 	var messageConverter = function messageConverter(arg) {
 	  if ((0, _utils.isString)(arg)) return (0, _Message.Message)(arg);
 	  if ((0, _utils.isFunction)(arg)) return (0, _Message.Message)('state', arg);
@@ -2601,12 +2759,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }), (0, _graflow.Filter)(_utils.isDefined), (0, _graflow.ArraySerializer)());
 	};
 	
+	var isMessageForEventsBlock = function isMessageForEventsBlock(v) {
+	  return (0, _Message.isMessage)(v) && v.blocks.includes('events');
+	};
+	var valuesFromMessage = function valuesFromMessage(m) {
+	  return m.values;
+	};
+	
 	var Events = function Events(handlers) {
-	  return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
-	    return (0, _Message.isMessage)(v) && v.blocks.includes('events');
-	  }), (0, _graflow.Mapper)(function (m) {
-	    return m.values;
-	  }), EventState(), EventHandler(handlers), (0, _graflow.Mapper)(function (v) {
+	  return (0, _graflow.Chain)((0, _graflow.Filter)((0, _Message.isMessageForBlock)('events')), (0, _graflow.Mapper)(valuesFromMessage), EventState(), // Add in States with Events
+	  EventHandler(handlers), (0, _graflow.Mapper)(function (v) {
 	    return (0, _Message.toMessage)(v, messageConverter);
 	  }));
 	};
@@ -2614,7 +2776,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Events;
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2686,7 +2848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = View;
 
 /***/ },
-/* 18 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2697,39 +2859,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
-	var _BusBlock = __webpack_require__(19);
+	var _BusBlock = __webpack_require__(21);
 	
 	var _BusBlock2 = _interopRequireDefault(_BusBlock);
 	
-	var _Bus = __webpack_require__(20);
+	var _Bus = __webpack_require__(22);
 	
 	var _Bus2 = _interopRequireDefault(_Bus);
 	
-	var _Inputs = __webpack_require__(21);
+	var _Inputs = __webpack_require__(23);
 	
 	var _Inputs2 = _interopRequireDefault(_Inputs);
 	
-	var _Outputs = __webpack_require__(22);
+	var _Outputs = __webpack_require__(24);
 	
 	var _Outputs2 = _interopRequireDefault(_Outputs);
 	
-	var _State = __webpack_require__(15);
+	var _State = __webpack_require__(17);
 	
 	var _State2 = _interopRequireDefault(_State);
 	
-	var _Events = __webpack_require__(16);
+	var _Events = __webpack_require__(18);
 	
 	var _Events2 = _interopRequireDefault(_Events);
 	
-	var _View = __webpack_require__(17);
+	var _View = __webpack_require__(19);
 	
 	var _View2 = _interopRequireDefault(_View);
 	
-	var _Dom = __webpack_require__(23);
+	var _Dom = __webpack_require__(25);
 	
 	var _Dom2 = _interopRequireDefault(_Dom);
 	
-	var _CustomBlocks = __webpack_require__(24);
+	var _CustomBlocks = __webpack_require__(26);
 	
 	var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
 	
@@ -2767,7 +2929,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Block;
 
 /***/ },
-/* 19 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2803,7 +2965,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = BusBlock;
 
 /***/ },
-/* 20 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2825,7 +2987,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Bus;
 
 /***/ },
-/* 21 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2859,7 +3021,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Inputs;
 
 /***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2872,18 +3034,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Message = __webpack_require__(5);
 	
+	var toValues = function toValues(m) {
+	  return m.values;
+	};
+	
 	var Outputs = function Outputs() {
-	  return (0, _graflow.Chain)((0, _graflow.Filter)(function (v) {
-	    return (0, _Message.isMessage)(v) && v.blocks.includes('out');
-	  }), (0, _graflow.Mapper)(function (m) {
-	    return m.values;
-	  }));
+	  return (0, _graflow.Chain)(
+	  // Logger({prefix:'Outputs/Outputs/Chain/input'}),
+	  (0, _graflow.Filter)((0, _Message.isMessageForBlock)('out')),
+	  // Logger({prefix:'Outputs/Outputs/Chain/isMessageForOutputs'}),
+	  (0, _graflow.Mapper)(toValues)
+	  // , Logger({prefix:'Outputs/Outputs/Chain/output'})
+	  );
 	};
 	
 	exports.default = Outputs;
 
 /***/ },
-/* 23 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2927,7 +3095,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = Dom;
 
 /***/ },
-/* 24 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
