@@ -37,7 +37,7 @@ const toSnabbdom = (vdom, svg = false) => {
     return flatten(vdom).filter(isDefined).map(v => toSnabbdom(v, svg))
   }
 
-  const {tag = 'div', attrs = {}, on = {}, content = [], component, props = {}} = vdom
+  const {tag = 'div', attrs = {}, on = {}, content = [], component, props = {}, style = {}} = vdom
 
   const {class: klass, ...rest} = attrs
 
@@ -55,6 +55,7 @@ const toSnabbdom = (vdom, svg = false) => {
   return h(tag,
     {
       attrs: rest,
+      style,
       props,
       class: klass,
       on: handlers,

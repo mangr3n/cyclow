@@ -278,7 +278,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      content = _vdom$content === undefined ? [] : _vdom$content,
 	      component = vdom.component,
 	      _vdom$props = vdom.props,
-	      props = _vdom$props === undefined ? {} : _vdom$props;
+	      props = _vdom$props === undefined ? {} : _vdom$props,
+	      _vdom$style = vdom.style,
+	      style = _vdom$style === undefined ? {} : _vdom$style;
 	
 	  var klass = attrs.class,
 	      rest = _objectWithoutProperties(attrs, ['class']);
@@ -294,6 +296,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  return (0, _h2.default)(tag, _extends({
 	    attrs: rest,
+	    style: style,
 	    props: props,
 	    class: klass,
 	    on: handlers
