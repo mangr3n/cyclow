@@ -342,14 +342,6 @@ return /******/ (function(modules) { // webpackBootstrap
 					return obj && obj.__esModule ? obj : { default: obj };
 				}
 	
-				function _defineProperty(obj, key, value) {
-					if (key in obj) {
-						Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
-					} else {
-						obj[key] = value;
-					}return obj;
-				}
-	
 				function _objectWithoutProperties(obj, keys) {
 					var target = {};for (var i in obj) {
 						if (keys.indexOf(i) >= 0) continue;if (!Object.prototype.hasOwnProperty.call(obj, i)) continue;target[i] = obj[i];
@@ -385,8 +377,6 @@ return /******/ (function(modules) { // webpackBootstrap
 				};
 	
 				var toSnabbdom = function toSnabbdom(vdom) {
-					var _extends2;
-	
 					var svg = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 	
 					if ((0, _utils.isString)(vdom)) return vdom;
@@ -404,7 +394,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					    on = _vdom$on === undefined ? {} : _vdom$on,
 					    _vdom$content = vdom.content,
 					    content = _vdom$content === undefined ? [] : _vdom$content,
-					    component = vdom.component;
+					    component = vdom.component,
+					    _vdom$props = vdom.props,
+					    props = _vdom$props === undefined ? {} : _vdom$props;
 	
 					var klass = attrs.class,
 					    rest = _objectWithoutProperties(attrs, ['class']);
@@ -418,7 +410,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					var newSvg = svg || tag === 'svg';
 	
-					return (0, _h2.default)(tag, _extends((_extends2 = {}, _defineProperty(_extends2, newSvg ? 'attrs' : 'props', rest), _defineProperty(_extends2, 'class', klass), _defineProperty(_extends2, 'on', handlers), _extends2), hook), toSnabbdom(content, newSvg));
+					return (0, _h2.default)(tag, _extends({
+						attrs: rest,
+						props: props,
+						class: klass,
+						on: handlers
+					}, hook), toSnabbdom(content, newSvg));
 				};
 	
 				var updateProps = function updateProps(oldVnode, vnode) {
