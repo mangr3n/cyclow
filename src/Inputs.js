@@ -1,4 +1,4 @@
-import {Mapper, Chain} from 'graflow'
+import {Mapper, Chain, Logger} from 'graflow'
 import Message from './Message'
 
 const Inputs = () => Chain(

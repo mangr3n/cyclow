@@ -1,4 +1,5 @@
 export {default as run} from './run'
+export { runComponent } from './run'
 export {default as h} from './h'
 export {default as SnabbdomRenderer} from './SnabbdomRenderer'
 export {default as State} from './State'

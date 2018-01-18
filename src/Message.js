@@ -31,11 +31,11 @@ const createMessage = ({blocks, values = {default: {}}}) => ({
 })
 
 const isMessage = arg => arg[messageSymbol]
+const isMessageForBlock = (blockName) => (m) => isMessage(m) && m.blocks.includes(blockName);
 
 const toMessage = (arg, converter) => {
   if(isMessage(arg)) return arg
   if(isArray(arg)) return arg.map(toMessage)
-
   return [].concat(converter(arg))
 }
 
@@ -48,4 +48,4 @@ const getHandler = (handlers, block, signal) => {
   if(signal === 'default' && handlers[block]) return handlers[block]
 }
 
-export {Message as default, Message, isMessage, toMessage, getHandler}
+export {Message as default, Message, isMessage,isMessageForBlock, toMessage, getHandler}

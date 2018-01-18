@@ -1,26 +1,35 @@
 import SnabbdomRenderer from './SnabbdomRenderer'
-import {Component} from 'graflow'
+import {
+  Component,
+  Demuxer
+} from 'graflow'
 
-const run = (MainComponent, opts={}) => {
-  document.addEventListener('DOMContentLoaded', () => {
-    const init = opts.init || {}
-    const Renderer = opts.renderer || SnabbdomRenderer
 
-    const comp = Component({
-      components: {
-        main: MainComponent(),
-        renderer: Renderer(opts.target),
-        outMapper: Component((v, next) => { if (v.vdom) next(v.vdom) })
-      },
-      connections: [
-        ['in', 'main'],
-        ['main', 'outMapper'],
-        ['outMapper', 'renderer']
-      ]
-    })
+export const runComponent = (MainComponent, opts = {}) => {
+  const init = opts.init || {};
+  const Renderer = opts.renderer || SnabbdomRenderer;
 
-    comp.send({init})
-  })
-}
+  const comp = Component({
+    components: {
+      main: MainComponent(),
+      renderer: Renderer(opts.target),
+      demuxer: Demuxer('vdom', 'signals')
+    },
+    connections: [
+      ['in','main'],
+      ['main','demuxer'],
+      ['demuxer.vdom','renderer'],
+      ['demuxer.signals','out']
+    ]
+  });
+  comp.send({init});
+  return comp;
+};
 
-export default run
+export const run = (MainComponent, opts = {}) => {
+    window.addEventListener('DOMContentLoaded',() => {
+      return runComponent(MainComponent,opts);
+    });
+};
+
+export default run;

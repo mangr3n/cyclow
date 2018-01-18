@@ -1,7 +1,27 @@
-import {Message, isMessage, toMessage, getHandler} from './Message'
-import {isFunction, isString, isObject, isDefined, flatten} from './utils'
-import {Chain, Component, SortedDemuxer, Mapper, Filter,
-  Memorizer, ArraySerializer} from 'graflow'
+import {
+  Message,
+  isMessage,
+  isMessageForBlock,
+  toMessage,
+  getHandler
+} from './Message'
+import {
+  isFunction,
+  isString,
+  isObject,
+  isDefined,
+  flatten
+} from './utils'
+import {
+  Chain,
+  Component,
+  SortedDemuxer,
+  Mapper,
+  Filter,
+  Memorizer,
+  ArraySerializer,
+  Logger
+} from 'graflow'
 
 const EventState = () => Component({
   inputs: ['state', 'event'],
@@ -21,17 +41,21 @@ const EventState = () => Component({
   ]
 })
 
+// Too Smart?  Not obvious interpretation of the event handlers
 const messageConverter = arg => {
-  if(isString(arg)) return Message(arg)
-  if(isFunction(arg)) return Message('state', arg)
-  if(isObject(arg)) {
+  if (isString(arg)) return Message(arg)
+  if (isFunction(arg)) return Message('state', arg)
+  if (isObject(arg)) {
     return Object.entries(arg).map(([name, value]) => Message(name, value))
   }
   return Message('state', () => arg)
 }
 
 const EventHandler = handlers => Chain(
-  Mapper(({value: [comp, port, value], memory}) => [
+  Mapper(({
+    value: [comp, port, value],
+    memory
+  }) => [
     getHandler(handlers, comp, port),
     value,
     memory
@@ -42,10 +66,15 @@ const EventHandler = handlers => Chain(
   ArraySerializer()
 )
 
+const isMessageForEventsBlock = v => {
+  return isMessage(v) && v.blocks.includes('events')
+};
+const valuesFromMessage = m => m.values;
+
 const Events = handlers => Chain(
-  Filter(v => isMessage(v) && v.blocks.includes('events')),
-  Mapper(m => m.values),
-  EventState(),
+  Filter(isMessageForBlock('events')),
+  Mapper(valuesFromMessage),
+  EventState(), // Add in States with Events
   EventHandler(handlers),
   Mapper(v => toMessage(v, messageConverter))
 )

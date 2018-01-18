@@ -1,9 +1,15 @@
-import {Mapper, Chain, Filter} from 'graflow'
-import {Message, isMessage} from './Message'
+import {Mapper, Chain, Filter,Logger} from 'graflow'
+import {Message, isMessageForBlock} from './Message'
+
+
+const toValues = m => m.values;
 
 const Outputs = () => Chain(
-  Filter(v => isMessage(v) && v.blocks.includes('out')),
-  Mapper(m => m.values)
+  // Logger({prefix:'Outputs/Outputs/Chain/input'}),
+  Filter(isMessageForBlock('out')),
+  // Logger({prefix:'Outputs/Outputs/Chain/isMessageForOutputs'}),
+  Mapper(toValues)
+  // , Logger({prefix:'Outputs/Outputs/Chain/output'})
 )
 
 export default Outputs
