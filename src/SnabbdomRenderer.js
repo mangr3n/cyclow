@@ -8,6 +8,7 @@ import eventlisteners from 'snabbdom/modules/eventlisteners'
 import props from 'snabbdom/modules/props'
 import attributes from 'snabbdom/modules/attributes'
 import klass from 'snabbdom/modules/class'
+import style from 'snabbdom/modules/style'
 import h from 'snabbdom/h'
 
 const Event = arg => {
@@ -78,6 +79,7 @@ const SnabbdomRenderer = (targetId) => {
     props,
     attributes,
     klass,
+    style,
     liveProps
   ])
 

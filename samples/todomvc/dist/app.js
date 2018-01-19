@@ -147,7 +147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _h = __webpack_require__(16);
+				var _h = __webpack_require__(17);
 	
 				Object.defineProperty(exports, 'h', {
 					enumerable: true,
@@ -165,7 +165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _State = __webpack_require__(17);
+				var _State = __webpack_require__(18);
 	
 				Object.defineProperty(exports, 'State', {
 					enumerable: true,
@@ -174,7 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Events = __webpack_require__(18);
+				var _Events = __webpack_require__(19);
 	
 				Object.defineProperty(exports, 'Events', {
 					enumerable: true,
@@ -183,7 +183,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _View = __webpack_require__(19);
+				var _View = __webpack_require__(20);
 	
 				Object.defineProperty(exports, 'View', {
 					enumerable: true,
@@ -192,7 +192,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				});
 	
-				var _Block = __webpack_require__(20);
+				var _Block = __webpack_require__(21);
 	
 				Object.defineProperty(exports, 'Block', {
 					enumerable: true,
@@ -332,6 +332,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				var _class2 = _interopRequireDefault(_class);
 	
+				var _style = __webpack_require__(16);
+	
+				var _style2 = _interopRequireDefault(_style);
+	
 				var _h = __webpack_require__(10);
 	
 				var _h2 = _interopRequireDefault(_h);
@@ -428,7 +432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				var liveProps = { create: updateProps, update: updateProps };
 	
 				var SnabbdomRenderer = function SnabbdomRenderer(targetId) {
-					var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _attributes2.default, _class2.default, liveProps]);
+					var patch = _snabbdom2.default.init([_eventlisteners2.default, _props2.default, _attributes2.default, _class2.default, _style2.default, liveProps]);
 	
 					var target = targetId ? document.getElementById(targetId) : document.body.appendChild(document.createElement('div'));
 	
@@ -3031,6 +3035,109 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				"use strict";
 	
+				var raf = typeof window !== 'undefined' && window.requestAnimationFrame || setTimeout;
+				var nextFrame = function nextFrame(fn) {
+					raf(function () {
+						raf(fn);
+					});
+				};
+				function setNextFrame(obj, prop, val) {
+					nextFrame(function () {
+						obj[prop] = val;
+					});
+				}
+				function updateStyle(oldVnode, vnode) {
+					var cur,
+					    name,
+					    elm = vnode.elm,
+					    oldStyle = oldVnode.data.style,
+					    style = vnode.data.style;
+					if (!oldStyle && !style) return;
+					if (oldStyle === style) return;
+					oldStyle = oldStyle || {};
+					style = style || {};
+					var oldHasDel = 'delayed' in oldStyle;
+					for (name in oldStyle) {
+						if (!style[name]) {
+							if (name[0] === '-' && name[1] === '-') {
+								elm.style.removeProperty(name);
+							} else {
+								elm.style[name] = '';
+							}
+						}
+					}
+					for (name in style) {
+						cur = style[name];
+						if (name === 'delayed') {
+							for (name in style.delayed) {
+								cur = style.delayed[name];
+								if (!oldHasDel || cur !== oldStyle.delayed[name]) {
+									setNextFrame(elm.style, name, cur);
+								}
+							}
+						} else if (name !== 'remove' && cur !== oldStyle[name]) {
+							if (name[0] === '-' && name[1] === '-') {
+								elm.style.setProperty(name, cur);
+							} else {
+								elm.style[name] = cur;
+							}
+						}
+					}
+				}
+				function applyDestroyStyle(vnode) {
+					var style,
+					    name,
+					    elm = vnode.elm,
+					    s = vnode.data.style;
+					if (!s || !(style = s.destroy)) return;
+					for (name in style) {
+						elm.style[name] = style[name];
+					}
+				}
+				function applyRemoveStyle(vnode, rm) {
+					var s = vnode.data.style;
+					if (!s || !s.remove) {
+						rm();
+						return;
+					}
+					var name,
+					    elm = vnode.elm,
+					    i = 0,
+					    compStyle,
+					    style = s.remove,
+					    amount = 0,
+					    applied = [];
+					for (name in style) {
+						applied.push(name);
+						elm.style[name] = style[name];
+					}
+					compStyle = getComputedStyle(elm);
+					var props = compStyle['transition-property'].split(', ');
+					for (; i < props.length; ++i) {
+						if (applied.indexOf(props[i]) !== -1) amount++;
+					}
+					elm.addEventListener('transitionend', function (ev) {
+						if (ev.target === elm) --amount;
+						if (amount === 0) rm();
+					});
+				}
+				exports.styleModule = {
+					create: updateStyle,
+					update: updateStyle,
+					destroy: applyDestroyStyle,
+					remove: applyRemoveStyle
+				};
+				Object.defineProperty(exports, "__esModule", { value: true });
+				exports.default = exports.styleModule;
+				//# sourceMappingURL=style.js.map
+	
+				/***/
+			},
+			/* 17 */
+			/***/function (module, exports) {
+	
+				"use strict";
+	
 				Object.defineProperty(exports, "__esModule", {
 					value: true
 				});
@@ -3058,7 +3165,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 17 */
+			/* 18 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3156,7 +3263,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 18 */
+			/* 19 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3269,7 +3376,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 19 */
+			/* 20 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3354,7 +3461,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 20 */
+			/* 21 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3373,39 +3480,39 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				};
 	
-				var _BusBlock = __webpack_require__(21);
+				var _BusBlock = __webpack_require__(22);
 	
 				var _BusBlock2 = _interopRequireDefault(_BusBlock);
 	
-				var _Bus = __webpack_require__(22);
+				var _Bus = __webpack_require__(23);
 	
 				var _Bus2 = _interopRequireDefault(_Bus);
 	
-				var _Inputs = __webpack_require__(23);
+				var _Inputs = __webpack_require__(24);
 	
 				var _Inputs2 = _interopRequireDefault(_Inputs);
 	
-				var _Outputs = __webpack_require__(24);
+				var _Outputs = __webpack_require__(25);
 	
 				var _Outputs2 = _interopRequireDefault(_Outputs);
 	
-				var _State = __webpack_require__(17);
+				var _State = __webpack_require__(18);
 	
 				var _State2 = _interopRequireDefault(_State);
 	
-				var _Events = __webpack_require__(18);
+				var _Events = __webpack_require__(19);
 	
 				var _Events2 = _interopRequireDefault(_Events);
 	
-				var _View = __webpack_require__(19);
+				var _View = __webpack_require__(20);
 	
 				var _View2 = _interopRequireDefault(_View);
 	
-				var _Dom = __webpack_require__(25);
+				var _Dom = __webpack_require__(26);
 	
 				var _Dom2 = _interopRequireDefault(_Dom);
 	
-				var _CustomBlocks = __webpack_require__(26);
+				var _CustomBlocks = __webpack_require__(27);
 	
 				var _CustomBlocks2 = _interopRequireDefault(_CustomBlocks);
 	
@@ -3450,7 +3557,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 21 */
+			/* 22 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3495,7 +3602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 22 */
+			/* 23 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3518,7 +3625,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 23 */
+			/* 24 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3579,7 +3686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 24 */
+			/* 25 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3610,7 +3717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 25 */
+			/* 26 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
@@ -3655,7 +3762,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				/***/
 			},
-			/* 26 */
+			/* 27 */
 			/***/function (module, exports, __webpack_require__) {
 	
 				'use strict';
