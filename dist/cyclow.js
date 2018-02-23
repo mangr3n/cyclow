@@ -749,10 +749,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		      inputs = _obj$inputs === undefined ? [] : _obj$inputs,
 		      _obj$outputs = obj.outputs,
 		      outputs = _obj$outputs === undefined ? [] : _obj$outputs,
+		      _obj$debug = obj.debug,
+		      debug = _obj$debug === undefined ? [] : _obj$debug,
 		      _obj$name = obj.name,
 		      name = _obj$name === undefined ? '' : _obj$name;
 		
 		
+		  var id = nextId();
 		  var inputNames = (0, _utils.unique)(inputs.concat('default'));
 		  var outputNames = (0, _utils.unique)(outputs.concat('default'));
 		
@@ -781,6 +784,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		    var outNode = selectNode(from, components, 'outputs');
 		    var inNode = selectNode(to, components, 'inputs');
 		    outNode.addListener(inNode);
+		  });
+		
+		  debug.forEach(function (nodeName) {
+		    var debugNode = selectNode(nodeName, components, 'outputs');
+		    debugNode.on(function (v) {
+		      return console.log('DEBUG Component(' + name + ':' + id + ').' + nodeName + ': ', v);
+		    });
 		  });
 		
 		  var on = function on() {
@@ -832,7 +842,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		    off: off,
 		    inputs: inNodes,
 		    outputs: outNodes,
-		    id: nextId(),
+		    id: id,
 		    name: name
 		  };
 		};
