@@ -776,6 +776,9 @@ return /******/ (function(modules) { // webpackBootstrap
 									on: function on(handler) {
 										return node.on(handler);
 									},
+									off: function off(id) {
+										return node.off(id);
+									},
 									inputs: {
 										default: node
 									},
@@ -793,8 +796,9 @@ return /******/ (function(modules) { // webpackBootstrap
 							};
 	
 							var node = function node(onNext) {
+								var id = nextId();
 								var queue = [];
-								var listeners = [];
+								var listeners = {};
 	
 								var broadcast = function broadcast(arg) {
 									var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -808,11 +812,15 @@ return /******/ (function(modules) { // webpackBootstrap
 								};
 	
 								var next = function next(v) {
-									return broadcast(listeners, v);
+									return broadcast(Object.values(listeners), v);
 								};
 	
 								var addListener = function addListener(node) {
-									return listeners.push(node);
+									listeners[node.id] = node;
+									return node.id;
+								};
+								var removeListener = function removeListener(id) {
+									delete listeners[id];
 								};
 								var on = function on(handler) {
 									return addListener(toNode(function (v) {
@@ -827,6 +835,9 @@ return /******/ (function(modules) { // webpackBootstrap
 										return onNext(v, next);
 									});
 								};
+								var off = function off(id) {
+									return removeListener(id);
+								};
 	
 								var send = function send() {
 									var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -837,11 +848,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 								return {
 									on: on,
+									off: off,
 									send: send,
 									addListener: addListener,
 									addToQueue: addToQueue,
 									processQueue: processQueue,
-									id: nextId()
+									id: id
 								};
 							};
 	
@@ -878,9 +890,12 @@ return /******/ (function(modules) { // webpackBootstrap
 								    inputs = _obj$inputs === undefined ? [] : _obj$inputs,
 								    _obj$outputs = obj.outputs,
 								    outputs = _obj$outputs === undefined ? [] : _obj$outputs,
+								    _obj$debug = obj.debug,
+								    debug = _obj$debug === undefined ? [] : _obj$debug,
 								    _obj$name = obj.name,
 								    name = _obj$name === undefined ? '' : _obj$name;
 	
+								var id = nextId();
 								var inputNames = (0, _utils.unique)(inputs.concat('default'));
 								var outputNames = (0, _utils.unique)(outputs.concat('default'));
 	
@@ -911,6 +926,13 @@ return /******/ (function(modules) { // webpackBootstrap
 									outNode.addListener(inNode);
 								});
 	
+								debug.forEach(function (nodeName) {
+									var debugNode = selectNode(nodeName, components, 'outputs');
+									debugNode.on(function (v) {
+										return console.log('DEBUG Component(' + name + ':' + id + ').' + nodeName + ': ', v);
+									});
+								});
+	
 								var on = function on() {
 									for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 										args[_key] = arguments[_key];
@@ -920,38 +942,58 @@ return /******/ (function(modules) { // webpackBootstrap
 									    _args$splice$reverse2 = _slicedToArray(_args$splice$reverse, 2),
 									    handler = _args$splice$reverse2[0],
 									    _args$splice$reverse3 = _args$splice$reverse2[1],
-									    name = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
+									    nodeName = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
 	
-									outNodes[name].on(handler);
+									if ((0, _utils.isUndefined)(outNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/on: outNodes[' + nodeName + '] not found');
+									return outNodes[nodeName].on(handler);
 								};
 	
-								var send = function send() {
+								var off = function off() {
 									for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 										args[_key2] = arguments[_key2];
 									}
 	
 									var _args$splice$reverse4 = args.splice(0, 2).reverse(),
 									    _args$splice$reverse5 = _slicedToArray(_args$splice$reverse4, 2),
-									    _args$splice$reverse6 = _args$splice$reverse5[0],
-									    value = _args$splice$reverse6 === undefined ? {} : _args$splice$reverse6,
-									    _args$splice$reverse7 = _args$splice$reverse5[1],
-									    name = _args$splice$reverse7 === undefined ? 'default' : _args$splice$reverse7;
+									    id = _args$splice$reverse5[0],
+									    _args$splice$reverse6 = _args$splice$reverse5[1],
+									    nodeName = _args$splice$reverse6 === undefined ? 'default' : _args$splice$reverse6;
 	
-									inNodes[name].send(value);
+									if ((0, _utils.isUndefined)(outNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/off: outNodes[' + nodeName + '] not found');
+									return outNodes[nodeName].off(id);
+								};
+	
+								var send = function send() {
+									for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+										args[_key3] = arguments[_key3];
+									}
+	
+									var _args$splice$reverse7 = args.splice(0, 2).reverse(),
+									    _args$splice$reverse8 = _slicedToArray(_args$splice$reverse7, 2),
+									    _args$splice$reverse9 = _args$splice$reverse8[0],
+									    value = _args$splice$reverse9 === undefined ? {} : _args$splice$reverse9,
+									    _args$splice$reverse10 = _args$splice$reverse8[1],
+									    nodeName = _args$splice$reverse10 === undefined ? 'default' : _args$splice$reverse10;
+	
+									if ((0, _utils.isUndefined)(inNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/send: inNodes[' + nodeName + '] not found');
+									inNodes[nodeName].send(value);
 								};
 	
 								return {
 									send: send,
 									on: on,
+									off: off,
 									inputs: inNodes,
 									outputs: outNodes,
-									id: nextId(),
+									id: id,
 									name: name
 								};
 							};
 	
 							var Component = function Component(arg) {
-								if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg);
+								var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'Function';
+	
+								if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg, name);
 								return componentFromObject(arg);
 							};
 	
@@ -4244,6 +4286,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		    on: function on(handler) {
 		      return node.on(handler);
 		    },
+		    off: function off(id) {
+		      return node.off(id);
+		    },
 		    inputs: {
 		      default: node
 		    },
@@ -4261,8 +4306,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		};
 		
 		var node = function node(onNext) {
+		  var id = nextId();
 		  var queue = [];
-		  var listeners = [];
+		  var listeners = {};
 		
 		  var broadcast = function broadcast(arg) {
 		    var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -4276,11 +4322,15 @@ return /******/ (function(modules) { // webpackBootstrap
 		  };
 		
 		  var next = function next(v) {
-		    return broadcast(listeners, v);
+		    return broadcast(Object.values(listeners), v);
 		  };
 		
 		  var addListener = function addListener(node) {
-		    return listeners.push(node);
+		    listeners[node.id] = node;
+		    return node.id;
+		  };
+		  var removeListener = function removeListener(id) {
+		    delete listeners[id];
 		  };
 		  var on = function on(handler) {
 		    return addListener(toNode(function (v) {
@@ -4295,6 +4345,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		      return onNext(v, next);
 		    });
 		  };
+		  var off = function off(id) {
+		    return removeListener(id);
+		  };
 		
 		  var send = function send() {
 		    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -4305,11 +4358,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		
 		  return {
 		    on: on,
+		    off: off,
 		    send: send,
 		    addListener: addListener,
 		    addToQueue: addToQueue,
 		    processQueue: processQueue,
-		    id: nextId()
+		    id: id
 		  };
 		};
 		
@@ -4346,10 +4400,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		      inputs = _obj$inputs === undefined ? [] : _obj$inputs,
 		      _obj$outputs = obj.outputs,
 		      outputs = _obj$outputs === undefined ? [] : _obj$outputs,
+		      _obj$debug = obj.debug,
+		      debug = _obj$debug === undefined ? [] : _obj$debug,
 		      _obj$name = obj.name,
 		      name = _obj$name === undefined ? '' : _obj$name;
 		
 		
+		  var id = nextId();
 		  var inputNames = (0, _utils.unique)(inputs.concat('default'));
 		  var outputNames = (0, _utils.unique)(outputs.concat('default'));
 		
@@ -4380,6 +4437,13 @@ return /******/ (function(modules) { // webpackBootstrap
 		    outNode.addListener(inNode);
 		  });
 		
+		  debug.forEach(function (nodeName) {
+		    var debugNode = selectNode(nodeName, components, 'outputs');
+		    debugNode.on(function (v) {
+		      return console.log('DEBUG Component(' + name + ':' + id + ').' + nodeName + ': ', v);
+		    });
+		  });
+		
 		  var on = function on() {
 		    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 		      args[_key] = arguments[_key];
@@ -4389,38 +4453,58 @@ return /******/ (function(modules) { // webpackBootstrap
 		        _args$splice$reverse2 = _slicedToArray(_args$splice$reverse, 2),
 		        handler = _args$splice$reverse2[0],
 		        _args$splice$reverse3 = _args$splice$reverse2[1],
-		        name = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
+		        nodeName = _args$splice$reverse3 === undefined ? 'default' : _args$splice$reverse3;
 		
-		    outNodes[name].on(handler);
+		    if ((0, _utils.isUndefined)(outNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/on: outNodes[' + nodeName + '] not found');
+		    return outNodes[nodeName].on(handler);
 		  };
 		
-		  var send = function send() {
+		  var off = function off() {
 		    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
 		      args[_key2] = arguments[_key2];
 		    }
 		
 		    var _args$splice$reverse4 = args.splice(0, 2).reverse(),
 		        _args$splice$reverse5 = _slicedToArray(_args$splice$reverse4, 2),
-		        _args$splice$reverse6 = _args$splice$reverse5[0],
-		        value = _args$splice$reverse6 === undefined ? {} : _args$splice$reverse6,
-		        _args$splice$reverse7 = _args$splice$reverse5[1],
-		        name = _args$splice$reverse7 === undefined ? 'default' : _args$splice$reverse7;
+		        id = _args$splice$reverse5[0],
+		        _args$splice$reverse6 = _args$splice$reverse5[1],
+		        nodeName = _args$splice$reverse6 === undefined ? 'default' : _args$splice$reverse6;
 		
-		    inNodes[name].send(value);
+		    if ((0, _utils.isUndefined)(outNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/off: outNodes[' + nodeName + '] not found');
+		    return outNodes[nodeName].off(id);
+		  };
+		
+		  var send = function send() {
+		    for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+		      args[_key3] = arguments[_key3];
+		    }
+		
+		    var _args$splice$reverse7 = args.splice(0, 2).reverse(),
+		        _args$splice$reverse8 = _slicedToArray(_args$splice$reverse7, 2),
+		        _args$splice$reverse9 = _args$splice$reverse8[0],
+		        value = _args$splice$reverse9 === undefined ? {} : _args$splice$reverse9,
+		        _args$splice$reverse10 = _args$splice$reverse8[1],
+		        nodeName = _args$splice$reverse10 === undefined ? 'default' : _args$splice$reverse10;
+		
+		    if ((0, _utils.isUndefined)(inNodes[nodeName])) throw new Error('Component(' + name + ':' + id + ')/send: inNodes[' + nodeName + '] not found');
+		    inNodes[nodeName].send(value);
 		  };
 		
 		  return {
 		    send: send,
 		    on: on,
+		    off: off,
 		    inputs: inNodes,
 		    outputs: outNodes,
-		    id: nextId(),
+		    id: id,
 		    name: name
 		  };
 		};
 		
 		var Component = function Component(arg) {
-		  if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg);
+		  var name = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'Function';
+		
+		  if ((0, _utils.isFunction)(arg)) return componentFromFunction(arg, name);
 		  return componentFromObject(arg);
 		};
 		
