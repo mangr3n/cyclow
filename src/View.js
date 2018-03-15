@@ -16,6 +16,7 @@ const setComponent = (vdom, component) => {
 const setRoot = vdom => ({...vdom, root: true})
 
 const ViewComponent = (view, component) => Component({
+  name: 'ViewComponent',
   inputs: ['vdom', 'state'],
   components: {
     demuxer: SortedDemuxer('vdom', 'state'),
@@ -38,7 +39,8 @@ const ViewComponent = (view, component) => Component({
     ['view', 'filter'],
     ['filter', 'post'],
     ['post', 'out']
-  ]
+  ],
+  // debug: ['in','out']
 })
 
 const View = (view, component) => Chain(

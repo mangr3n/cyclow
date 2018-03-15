@@ -1,5 +1,6 @@
 import {Block} from '../../dist/cyclow'
 import Confirm from './confirm'
+import { h } from 'snabbdom';
 
 const Field = () => Block({
   outputs: ['submission'],
@@ -16,13 +17,21 @@ const Field = () => Block({
     ],
     state: ({input}) => ({'confirm.disabled': !input})
   },
+  // view: ({instruction, input}, {confirm}) => ({content: [
+  //   `${instruction}:`,
+  //   {
+  //     tag: 'input',
+  //     attrs: {id: 'field', value: input},
+  //     on: {keyup: (e, next) => next({text: e.target.value})}
+  //   },
+  //   confirm
+  // ]})
   view: ({instruction, input}, {confirm}) => ({content: [
     `${instruction}:`,
-    {
-      tag: 'input',
-      attrs: {id: 'field', value: input},
-      on: {keyup: (e, next) => next({text: e.target.value})}
-    },
+    h('input',{ 
+      attrs: { id: 'field', value: input},
+      on: { keyup: (e, next) => next({text: e.target.value })}
+    }),
     confirm
   ]})
 })

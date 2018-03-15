@@ -1,16 +1,15 @@
 import {Block} from '../../dist/cyclow'
+import { h } from 'snabbdom';
 
 const viewConfirm = () => [
-  {tag: 'button', content: 'Confirm', on: {click: 'confirm'}},
-  {tag: 'button', content: 'Cancel', on: {click: 'cancel'}}
-]
-
-const viewDefault = mode => ({
-  tag: 'button',
-  content: 'Submit',
+  h('button',{ on: { click: 'confirm' }},'Confirm'),
+  h('button',{ on: { click: 'cancel' }}, 'Cancel')
+];
+const viewDefault = mode => h('button',{
   attrs: {disabled: mode === 'disabled'},
-  on: {click: 'maybe'}
-})
+  on: { click : 'maybe' },
+}, 'Submit');
+
 
 const Confirm = () => Block({
   inputs: ['disabled'],
@@ -28,9 +27,12 @@ const Confirm = () => Block({
     'dom.cancel': () => state => ({mode: 'waiting'}),
     'dom.confirm': () => [state => ({mode: 'waiting'}), 'out.confirmation']
   },
-  view: ({mode}) => ({tag: 'span',
-    content: (mode === 'confirm' ? viewConfirm() : viewDefault(mode))
-  })
+  // view: ({mode}) => ({tag: 'span',
+  //   content: (mode === 'confirm' ? viewConfirm() : viewDefault(mode))
+  // })
+  view: ({mode}) => h('span',
+    (mode === 'confirm' ? viewConfirm() : viewDefault(mode))
+  )
 })
 
 export default Confirm

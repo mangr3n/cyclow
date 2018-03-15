@@ -2,6 +2,8 @@ import {
   Block
 } from '../../dist/cyclow';
 
+import { h } from 'snabbdom';
+
 const outTest = (v) => ({
   'out.signals': {
     'count': v
@@ -9,15 +11,33 @@ const outTest = (v) => ({
 });
 const set = (v, _) => v;
 
-const Label = (label) => ({
-  tag: 'span',
-  content: label
-});
-const Button = (label, signal) => ({
-  tag: 'button',
-  on: { click: signal},
-  content: label
-});
+// const Label = (label) => ({
+//   tag: 'span',
+//   hook: {
+//     update: (oldVNode, newVNode) => console.log(`Label(hook:update)`,{oldVNode,newVNode})
+//   },
+//   content: label
+// });
+
+const Label = (label) => h(
+  'span',
+  { hook: { 
+    update: (oldVNode, newVNode) => console.log(`Label(hook:update): ${label}`,{oldVNode,newVNode})
+  }},
+  label
+);
+
+const Button = (label,signal) => h(
+  'button',
+  { on: { click: signal }},
+  label
+);
+
+// const Button = (label, signal) => ({
+//   tag: 'button',
+//   on: { click: signal},
+//   content: label
+// });
 
 const Counter = (label) => Block({
   inputs: ['init', 'reset', 'set'],
@@ -37,6 +57,9 @@ const Counter = (label) => Block({
   },
 
   view: state => ({
+    hook: {
+      update: (oldVN,newVN) => console.log('Root/update',{oldVN,newVN})
+    },
     content: [
       Label(`Count: ${state}`),
       Button('+','inc'),

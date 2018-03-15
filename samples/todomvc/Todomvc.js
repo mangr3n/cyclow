@@ -17,6 +17,10 @@ const on = {
   'dom.cancelEditing': cancelEditing,
   'dom.clearCompleted': clearCompleted,
   'dom.filter': filter,
+  // bus: (msg) => {
+  //   console.log('Todomvc/bus Message(blocks: ',msg.blocks, ', values: ',  msg.values,')');
+  //   return msg;
+  // },
   state: state => { localStorage.setItem('todomvc', JSON.stringify(state)) }
 }
 

@@ -1,5 +1,6 @@
 import {Block} from '../../dist/cyclow'
 import Field from './field'
+import { h } from 'snabbdom';
 
 const Form = () => Block({
   blocks: {field: Field()},
@@ -12,7 +13,8 @@ const Form = () => Block({
   },
   view: ({current}, {field}) => ({content: [
     field,
-    {tag: 'p', content: `Submitted value: ${current}`}
+    h('p',`Submitted value: ${current}`)
+    // {tag: 'p', content: `Submitted value: ${current}`}
   ]})
 })
 
