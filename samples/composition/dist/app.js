@@ -232,16 +232,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					var init = opts.init || {};
 					var Renderer = opts.renderer || _SnabbdomRenderer2.default;
+					var debug = opts.debug || false;
+	
+					var main = MainComponent();
 	
 					var comp = (0, _graflow.Component)({
+						debug: debug ? ['main', 'renderer', 'in', 'out', 'demuxer'] : [],
+						name: main.name + "Wrapper",
 						components: {
-							main: MainComponent(),
+							main: main,
 							renderer: Renderer(opts.target),
 							demuxer: (0, _graflow.Demuxer)('vdom', 'signals')
 						},
 						connections: [['in', 'main'], ['main', 'demuxer'], ['demuxer.vdom', 'renderer'], ['demuxer.signals', 'out']]
 					});
-					comp.send({ init: init });
+					comp.send({
+						init: init
+					});
 					return comp;
 				};
 	
@@ -2309,16 +2316,23 @@ return /******/ (function(modules) { // webpackBootstrap
 						value = args[2];
 					}
 	
-					return createMessage({ blocks: block, values: _defineProperty({}, signal, value) });
+					return createMessage({
+						blocks: block,
+						values: _defineProperty({}, signal, value)
+					});
 				};
 	
 				var createMessage = function createMessage(_ref) {
 					var blocks = _ref.blocks,
 					    _ref$values = _ref.values,
-					    values = _ref$values === undefined ? { default: {} } : _ref$values;
+					    values = _ref$values === undefined ? {
+						default: {}
+					} : _ref$values;
 					return _defineProperty({
 						blocks: (0, _utils.isDefined)(blocks) ? (0, _utils.toArray)(blocks) : undefined,
-						values: (0, _utils.isObject)(values) ? values : { default: values }
+						values: (0, _utils.isObject)(values) ? values : {
+							default: values
+						}
 					}, messageSymbol, true);
 				};
 	
@@ -2338,9 +2352,6 @@ return /******/ (function(modules) { // webpackBootstrap
 				};
 	
 				var getHandler = function getHandler(handlers, block, signal) {
-					// const {blocks, values} = message
-					// const block = blocks[0]
-					// const signal = Object.entries(values)[0][0]
 					var name = block + '.' + signal;
 					if (handlers[name]) return handlers[name];
 					if (signal === 'default' && handlers[block]) return handlers[block];
@@ -4384,6 +4395,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					}return target;
 				}
 	
+				/**
+	    * 
+	    * @param {*} options 
+	    * @param on: an array of message handlers
+	    */
 				var Block = function Block(options) {
 					var _options$on = options.on,
 					    on = _options$on === undefined ? {} : _options$on,
@@ -4796,48 +4812,61 @@ return /******/ (function(modules) { // webpackBootstrap
 	var Field = function Field() {
 	  return (0, _cyclow.Block)({
 	    outputs: ['submission'],
-	    blocks: { confirm: (0, _confirm2.default)() },
+	    blocks: {
+	      confirm: (0, _confirm2.default)()
+	    },
 	    on: {
 	      'in.init': function inInit(instruction) {
 	        return [function (state) {
-	          return { instruction: instruction, input: '' };
+	          return {
+	            instruction: instruction,
+	            input: ''
+	          };
 	        }, 'confirm.init'];
 	      },
 	      'dom.text': function domText(newText) {
 	        return function (state) {
-	          return _extends({}, state, { input: newText });
+	          return _extends({}, state, {
+	            input: newText
+	          });
 	        };
 	      },
 	      'confirm.confirmation': function confirmConfirmation(_, _ref) {
 	        var input = _ref.input;
-	        return [{ 'out.submission': input }, function (state) {
-	          return _extends({}, state, { input: '' });
+	        return [{
+	          'out.submission': input
+	        }, function (state) {
+	          return _extends({}, state, {
+	            input: ''
+	          });
 	        }];
 	      },
 	      state: function state(_ref2) {
 	        var input = _ref2.input;
-	        return { 'confirm.disabled': !input };
+	        return {
+	          'confirm.disabled': !input
+	        };
 	      }
 	    },
-	    // view: ({instruction, input}, {confirm}) => ({content: [
-	    //   `${instruction}:`,
-	    //   {
-	    //     tag: 'input',
-	    //     attrs: {id: 'field', value: input},
-	    //     on: {keyup: (e, next) => next({text: e.target.value})}
-	    //   },
-	    //   confirm
-	    // ]})
 	    view: function view(_ref3, _ref4) {
 	      var instruction = _ref3.instruction,
 	          input = _ref3.input;
 	      var confirm = _ref4.confirm;
-	      return { content: [instruction + ':', (0, _snabbdom.h)('input', {
-	          attrs: { id: 'field', value: input },
-	          on: { keyup: function keyup(e, next) {
-	              return next({ text: e.target.value });
-	            } }
-	        }), confirm] };
+	      return {
+	        content: [instruction + ':', (0, _snabbdom.h)('input', {
+	          attrs: {
+	            id: 'field',
+	            value: input
+	          },
+	          on: {
+	            keyup: function keyup(e, next) {
+	              return next({
+	                text: e.target.value
+	              });
+	            }
+	          }
+	        }), confirm]
+	      };
 	    }
 	  });
 	};

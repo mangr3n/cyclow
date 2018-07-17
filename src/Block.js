@@ -7,11 +7,24 @@ import Events from './Events'
 import View from './View'
 import Dom from './Dom'
 import CustomBlocks from './CustomBlocks'
-import {Identity} from 'graflow'
+import {
+  Identity
+} from 'graflow'
 
+/**
+ * 
+ * @param {*} options 
+ * @param on: an array of message handlers
+ */
 const Block = options => {
-  const {on = {}, blocks = {}, view: stateToView = () => {}} = options
-  const {state: stateHandler, bus: busHandler, ...eventHandlers} = on
+  const {
+    on = {}, blocks = {}, view: stateToView = () => {}
+  } = options
+  const {
+    state: stateHandler,
+    bus: busHandler,
+    ...eventHandlers
+  } = on
 
   const bus = Bus(busHandler)
 
